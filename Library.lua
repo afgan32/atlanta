@@ -1793,7 +1793,7 @@
 				local holder = library:panel({
 					name = "ESP Preview", 
 					anchor_point = vec2(0, 0),
-					size = dim2(0, 300, 0, 325),
+					size = dim2(0, 300, 0, 525),
 					position = dim2(0, style.items.main_holder.AbsolutePosition.X, 0, style.items.main_holder.AbsolutePosition.Y + style.items.main_holder.AbsoluteSize.Y + 2),
 					image = "rbxassetid://77684377836328",
 				})  
@@ -1802,6 +1802,14 @@
 				
 				local column = setmetatable(items, library):column() 
 				window.esp_section = column:section({name = "Main"})
+				
+				local debug_section = column:section({name = "Debug Offsets"})
+				debug_section:slider({name = "Top Offset", flag = "esp_top_offset", min = -20, max = 20, default = 1, interval = 1})
+				debug_section:slider({name = "Bottom Offset", flag = "esp_bottom_offset", min = -20, max = 20, default = -1, interval = 1})
+				debug_section:slider({name = "Left Offset", flag = "esp_left_offset", min = -20, max = 20, default = 1, interval = 1})
+				debug_section:slider({name = "Right Offset", flag = "esp_right_offset", min = -20, max = 20, default = -1, interval = 1})
+				debug_section:slider({name = "Top/Bottom Spacing", flag = "esp_tb_spacing", min = 1, max = 30, default = 14, interval = 1})
+				debug_section:slider({name = "Left/Right Spacing", flag = "esp_lr_spacing", min = 1, max = 150, default = 80, interval = 1})
 			--  
 
 			-- playerlist 
@@ -1948,12 +1956,14 @@
 				healthbar = 0.5
 			}
 			
-			local zones = {
-				top = {offset = 1, anchor = vec2(0.5, 0), axis = "x", spacing = 14, dir = 1},
-				bottom = {offset = -1, anchor = vec2(0.5, 1), axis = "x", spacing = 14, dir = -1},
-				left = {offset = 1, anchor = vec2(0, 0.5), axis = "y", spacing = 80, dir = 1},
-				right = {offset = -1, anchor = vec2(1, 0.5), axis = "y", spacing = 80, dir = -1}
-			}
+			local function get_zones()
+				return {
+					top = {offset = flags["esp_top_offset"] or 1, anchor = vec2(0.5, 0), axis = "x", spacing = flags["esp_tb_spacing"] or 14, dir = 1},
+					bottom = {offset = flags["esp_bottom_offset"] or -1, anchor = vec2(0.5, 1), axis = "x", spacing = flags["esp_tb_spacing"] or 14, dir = -1},
+					left = {offset = flags["esp_left_offset"] or 1, anchor = vec2(0, 0.5), axis = "y", spacing = flags["esp_lr_spacing"] or 80, dir = 1},
+					right = {offset = flags["esp_right_offset"] or -1, anchor = vec2(1, 0.5), axis = "y", spacing = flags["esp_lr_spacing"] or 80, dir = -1}
+				}
+			end
 
 			local drag_button = library:create("TextButton", {
 				Parent = element,
@@ -2016,6 +2026,7 @@
 				
 				update_all_in_zone(zone)
 				
+				local zones = get_zones()
 				local zone_data = zones[zone]
 				local scale_pos = default_offsets[element_id] or 0.5
 				local stack_offset = (my_order - 1) * zone_data.spacing * zone_data.dir
