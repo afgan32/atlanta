@@ -1949,10 +1949,10 @@
 			}
 			
 			local zones = {
-				top = {offset = 1, anchor = vec2(0.5, 0), axis = "x", spacing = 14},
-				bottom = {offset = -1, anchor = vec2(0.5, 1), axis = "x", spacing = 14},
-				left = {offset = 1, anchor = vec2(0, 0.5), axis = "y", spacing = 14},
-				right = {offset = -1, anchor = vec2(1, 0.5), axis = "y", spacing = 14}
+				top = {offset = 1, anchor = vec2(0.5, 0), axis = "x", spacing = 14, dir = 1},
+				bottom = {offset = -1, anchor = vec2(0.5, 1), axis = "x", spacing = 14, dir = -1},
+				left = {offset = 1, anchor = vec2(0, 0.5), axis = "y", spacing = 80, dir = 1},
+				right = {offset = -1, anchor = vec2(1, 0.5), axis = "y", spacing = 80, dir = -1}
 			}
 
 			local drag_button = library:create("TextButton", {
@@ -1992,7 +1992,7 @@
 				return elements
 			end
 			
-			local function reorder_zone(zone)
+			local function update_all_in_zone(zone)
 				local elements = get_zone_elements(zone)
 				for i, elem in ipairs(elements) do
 					esp_element_orders[elem.id] = i
@@ -2001,19 +2001,24 @@
 
 			local function snap_to_zone(zone)
 				local old_zone = esp_element_zones[element_id]
-				esp_element_zones[element_id] = zone
 				
 				if old_zone and old_zone ~= zone then
-					reorder_zone(old_zone)
+					esp_element_zones[element_id] = nil
+					esp_element_orders[element_id] = nil
+					update_all_in_zone(old_zone)
 				end
+				
+				esp_element_zones[element_id] = zone
 				
 				local zone_elements = get_zone_elements(zone)
 				local my_order = #zone_elements
 				esp_element_orders[element_id] = my_order
 				
+				update_all_in_zone(zone)
+				
 				local zone_data = zones[zone]
 				local scale_pos = default_offsets[element_id] or 0.5
-				local stack_offset = (my_order - 1) * zone_data.spacing
+				local stack_offset = (my_order - 1) * zone_data.spacing * zone_data.dir
 				
 				element.AnchorPoint = zone_data.anchor
 				
@@ -2026,7 +2031,7 @@
 						element.Position = dim2(0.5, 0, 0, -3)
 					end
 				elseif zone == "bottom" then
-					element.Position = dim2(scale_pos, 0, 1, zone_data.offset - stack_offset)
+					element.Position = dim2(scale_pos, 0, 1, zone_data.offset + stack_offset)
 					if element_type == "healthbar" then
 						esp_element_orientations[element_id] = "horizontal"
 						element.Size = dim2(1, 0, 0, 3)
@@ -2042,7 +2047,7 @@
 						element.Position = dim2(0, -5, 0, 0)
 					end
 				elseif zone == "right" then
-					element.Position = dim2(1, zone_data.offset - stack_offset, scale_pos, 0)
+					element.Position = dim2(1, zone_data.offset + stack_offset, scale_pos, 0)
 					if element_type == "healthbar" then
 						esp_element_orientations[element_id] = "vertical"
 						element.Size = dim2(0, 4, 1, 0)
