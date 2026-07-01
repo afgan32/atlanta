@@ -1940,10 +1940,10 @@
 			local locked_zone = nil
 			
 			local zones = {
-				top = {offset = -5, anchor = vec2(0.5, 1)},
-				bottom = {offset = 5, anchor = vec2(0.5, 0)},
-				left = {offset = -5, anchor = vec2(1, 0.5)},
-				right = {offset = 5, anchor = vec2(0, 0.5)}
+				top = {offset = -5, anchor = vec2(0.5, 1), axis = "x"},
+				bottom = {offset = 5, anchor = vec2(0.5, 0), axis = "x"},
+				left = {offset = -5, anchor = vec2(1, 0.5), axis = "y"},
+				right = {offset = 5, anchor = vec2(0, 0.5), axis = "y"}
 			}
 
 			local drag_button = library:create("TextButton", {
@@ -1972,33 +1972,32 @@
 				else return "right" end
 			end
 
-			local function apply_zone_lock(zone)
+			local function apply_zone_lock(zone, scale_offset)
 				locked_zone = zone
 				local zone_data = zones[zone]
-				local holder_size = holder.AbsoluteSize
 				
 				element.AnchorPoint = zone_data.anchor
 				
 				if zone == "top" then
-					element.Position = dim2(0.5, 0, 0, zone_data.offset)
+					element.Position = dim2(scale_offset or 0.5, 0, 0, zone_data.offset)
 					if element_type == "healthbar" then
 						element.Size = dim2(1, 0, 0, 4)
 						element.Rotation = 0
 					end
 				elseif zone == "bottom" then
-					element.Position = dim2(0.5, 0, 1, zone_data.offset)
+					element.Position = dim2(scale_offset or 0.5, 0, 1, zone_data.offset)
 					if element_type == "healthbar" then
 						element.Size = dim2(1, 0, 0, 4)
 						element.Rotation = 0
 					end
 				elseif zone == "left" then
-					element.Position = dim2(0, zone_data.offset, 0.5, 0)
+					element.Position = dim2(0, zone_data.offset, scale_offset or 0.5, 0)
 					if element_type == "healthbar" then
 						element.Size = dim2(0, 4, 1, 0)
 						element.Rotation = 0
 					end
 				elseif zone == "right" then
-					element.Position = dim2(1, zone_data.offset, 0.5, 0)
+					element.Position = dim2(1, zone_data.offset, scale_offset or 0.5, 0)
 					if element_type == "healthbar" then
 						element.Size = dim2(0, 4, 1, 0)
 						element.Rotation = 0
@@ -2010,39 +2009,39 @@
 				dragging = true
 				start_pos = vec2(mouse.X, mouse.Y)
 				original_pos = element.Position
-				element.AnchorPoint = vec2(0, 0)
+				
+				local holder_pos = holder.AbsolutePosition
+				local element_abs_pos = element.AbsolutePosition
+				local holder_size = holder.AbsoluteSize
+				local rel_x = element_abs_pos.X - holder_pos.X + element.AbsoluteSize.X / 2
+				local rel_y = element_abs_pos.Y - holder_pos.Y + element.AbsoluteSize.Y / 2
+				
+				locked_zone = get_zone(rel_x, rel_y, holder_size)
 			end)
 
-			drag_button.MouseButton1Up:Connect(function()
-				if dragging then
+			library:connection(uis.InputEnded, function(input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1 then
 					dragging = false
-					
-					local holder_pos = holder.AbsolutePosition
-					local element_abs_pos = element.AbsolutePosition
-					local holder_size = holder.AbsoluteSize
-					
-					local rel_x = element_abs_pos.X - holder_pos.X + element.AbsoluteSize.X / 2
-					local rel_y = element_abs_pos.Y - holder_pos.Y + element.AbsoluteSize.Y / 2
-					
-					local zone = get_zone(rel_x, rel_y, holder_size)
-					apply_zone_lock(zone)
 				end
 			end)
 
 			library:connection(uis.InputChanged, function(input)
 				if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-					local delta = vec2(mouse.X - start_pos.X, mouse.Y - start_pos.Y)
-					local new_x = math.clamp(
-						original_pos.X.Offset + delta.X,
-						0,
-						holder.AbsoluteSize.X - element.AbsoluteSize.X
-					)
-					local new_y = math.clamp(
-						original_pos.Y.Offset + delta.Y,
-						0,
-						holder.AbsoluteSize.Y - element.AbsoluteSize.Y
-					)
-					element.Position = dim2(0, new_x, 0, new_y)
+					if not locked_zone then return end
+					
+					local zone_data = zones[locked_zone]
+					local holder_pos = holder.AbsolutePosition
+					local holder_size = holder.AbsoluteSize
+					
+					if zone_data.axis == "x" then
+						local mouse_rel_x = mouse.X - holder_pos.X
+						local scale = math.clamp(mouse_rel_x / holder_size.X, 0, 1)
+						apply_zone_lock(locked_zone, scale)
+					else
+						local mouse_rel_y = mouse.Y - holder_pos.Y
+						local scale = math.clamp(mouse_rel_y / holder_size.Y, 0, 1)
+						apply_zone_lock(locked_zone, scale)
+					end
 				end
 			end)
 		end
