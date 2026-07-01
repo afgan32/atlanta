@@ -1935,6 +1935,7 @@
 		-- Fatality-style dragging with zone locking and stacking
 		local esp_element_zones = {}
 		local esp_element_orientations = {}
+		local esp_element_orders = {}
 		
 		function library:make_esp_draggable(element, holder, element_type, element_id)
 			local dragging = false
@@ -1948,10 +1949,10 @@
 			}
 			
 			local zones = {
-				top = {offset = -5, anchor = vec2(0.5, 1), axis = "x", spacing = 14},
-				bottom = {offset = 5, anchor = vec2(0.5, 0), axis = "x", spacing = 14},
-				left = {offset = -5, anchor = vec2(1, 0.5), axis = "y", spacing = 14},
-				right = {offset = 5, anchor = vec2(0, 0.5), axis = "y", spacing = 14}
+				top = {offset = 1, anchor = vec2(0.5, 0), axis = "x", spacing = 14},
+				bottom = {offset = -1, anchor = vec2(0.5, 1), axis = "x", spacing = 14},
+				left = {offset = 1, anchor = vec2(0, 0.5), axis = "y", spacing = 14},
+				right = {offset = -1, anchor = vec2(1, 0.5), axis = "y", spacing = 14}
 			}
 
 			local drag_button = library:create("TextButton", {
@@ -1980,27 +1981,44 @@
 				else return "right" end
 			end
 			
-			local function get_stack_offset(zone)
-				local count = 0
+			local function get_zone_elements(zone)
+				local elements = {}
 				for id, z in pairs(esp_element_zones) do
-					if z == zone and id ~= element_id then
-						count = count + 1
+					if z == zone then
+						table.insert(elements, {id = id, order = esp_element_orders[id] or 999})
 					end
 				end
-				return count * zones[zone].spacing
+				table.sort(elements, function(a, b) return a.order < b.order end)
+				return elements
+			end
+			
+			local function reorder_zone(zone)
+				local elements = get_zone_elements(zone)
+				for i, elem in ipairs(elements) do
+					esp_element_orders[elem.id] = i
+				end
 			end
 
 			local function snap_to_zone(zone)
+				local old_zone = esp_element_zones[element_id]
 				esp_element_zones[element_id] = zone
 				
+				if old_zone and old_zone ~= zone then
+					reorder_zone(old_zone)
+				end
+				
+				local zone_elements = get_zone_elements(zone)
+				local my_order = #zone_elements
+				esp_element_orders[element_id] = my_order
+				
 				local zone_data = zones[zone]
-				local stack_offset = get_stack_offset(zone)
 				local scale_pos = default_offsets[element_id] or 0.5
+				local stack_offset = (my_order - 1) * zone_data.spacing
 				
 				element.AnchorPoint = zone_data.anchor
 				
 				if zone == "top" then
-					element.Position = dim2(scale_pos, 0, 0, zone_data.offset - stack_offset)
+					element.Position = dim2(scale_pos, 0, 0, zone_data.offset + stack_offset)
 					if element_type == "healthbar" then
 						esp_element_orientations[element_id] = "horizontal"
 						element.Size = dim2(1, 0, 0, 3)
@@ -2008,7 +2026,7 @@
 						element.Position = dim2(0.5, 0, 0, -3)
 					end
 				elseif zone == "bottom" then
-					element.Position = dim2(scale_pos, 0, 1, zone_data.offset + stack_offset)
+					element.Position = dim2(scale_pos, 0, 1, zone_data.offset - stack_offset)
 					if element_type == "healthbar" then
 						esp_element_orientations[element_id] = "horizontal"
 						element.Size = dim2(1, 0, 0, 3)
@@ -2016,7 +2034,7 @@
 						element.Position = dim2(0.5, 0, 1, 3)
 					end
 				elseif zone == "left" then
-					element.Position = dim2(0, zone_data.offset - stack_offset, scale_pos, 0)
+					element.Position = dim2(0, zone_data.offset + stack_offset, scale_pos, 0)
 					if element_type == "healthbar" then
 						esp_element_orientations[element_id] = "vertical"
 						element.Size = dim2(0, 4, 1, 0)
@@ -2024,7 +2042,7 @@
 						element.Position = dim2(0, -5, 0, 0)
 					end
 				elseif zone == "right" then
-					element.Position = dim2(1, zone_data.offset + stack_offset, scale_pos, 0)
+					element.Position = dim2(1, zone_data.offset - stack_offset, scale_pos, 0)
 					if element_type == "healthbar" then
 						esp_element_orientations[element_id] = "vertical"
 						element.Size = dim2(0, 4, 1, 0)
@@ -2110,7 +2128,7 @@
 					Parent = items.viewportframe;
 					Name = "\0";
 					BackgroundTransparency = 1;
-					Position = dim2(0.5, 0, 0.5, 10);
+					Position = dim2(0.5, 0, 0.5, 0);
 					BorderColor3 = rgb(0, 0, 0);
 					Size = dim2(0, 135, 0, 190);
 					BorderSizePixel = 0;
@@ -2128,7 +2146,7 @@
 					Parent = library.cache;
 					TextColor3 = flags["Name_Color"].Color;
 					BorderColor3 = rgb(0, 0, 0);
-					Text = string.format("%s (@%s)", lp.DisplayName, lp.Name);
+					Text = lp.DisplayName;
 					Name = "\0";
 					TextStrokeTransparency = 0;
 					AnchorPoint = vec2(0, 1);
