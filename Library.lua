@@ -1932,14 +1932,20 @@
 
 		end 
 
-		-- Helper function for dragging ESP elements with snapping
-		function library:make_esp_draggable(element, holder, snap_distance)
-			snap_distance = snap_distance or 20
+		-- Fatality-style dragging with zone locking
+		function library:make_esp_draggable(element, holder, element_type)
 			local dragging = false
 			local start_pos
 			local original_pos
+			local locked_zone = nil
+			
+			local zones = {
+				top = {offset = -5, anchor = vec2(0.5, 1)},
+				bottom = {offset = 5, anchor = vec2(0.5, 0)},
+				left = {offset = -5, anchor = vec2(1, 0.5)},
+				right = {offset = 5, anchor = vec2(0, 0.5)}
+			}
 
-			-- Create invisible drag button
 			local drag_button = library:create("TextButton", {
 				Parent = element,
 				Size = dim2(1, 0, 1, 0),
@@ -1949,60 +1955,77 @@
 				Active = false,
 			})
 
+			local function get_zone(rel_x, rel_y, holder_size)
+				local center_x = holder_size.X / 2
+				local center_y = holder_size.Y / 2
+				
+				local dist_top = math.abs(rel_y)
+				local dist_bottom = math.abs(rel_y - holder_size.Y)
+				local dist_left = math.abs(rel_x)
+				local dist_right = math.abs(rel_x - holder_size.X)
+				
+				local min_dist = math.min(dist_top, dist_bottom, dist_left, dist_right)
+				
+				if min_dist == dist_top then return "top"
+				elseif min_dist == dist_bottom then return "bottom"
+				elseif min_dist == dist_left then return "left"
+				else return "right" end
+			end
+
+			local function apply_zone_lock(zone)
+				locked_zone = zone
+				local zone_data = zones[zone]
+				local holder_size = holder.AbsoluteSize
+				
+				element.AnchorPoint = zone_data.anchor
+				
+				if zone == "top" then
+					element.Position = dim2(0.5, 0, 0, zone_data.offset)
+					if element_type == "healthbar" then
+						element.Size = dim2(1, 0, 0, 4)
+						element.Rotation = 0
+					end
+				elseif zone == "bottom" then
+					element.Position = dim2(0.5, 0, 1, zone_data.offset)
+					if element_type == "healthbar" then
+						element.Size = dim2(1, 0, 0, 4)
+						element.Rotation = 0
+					end
+				elseif zone == "left" then
+					element.Position = dim2(0, zone_data.offset, 0.5, 0)
+					if element_type == "healthbar" then
+						element.Size = dim2(0, 4, 1, 0)
+						element.Rotation = 0
+					end
+				elseif zone == "right" then
+					element.Position = dim2(1, zone_data.offset, 0.5, 0)
+					if element_type == "healthbar" then
+						element.Size = dim2(0, 4, 1, 0)
+						element.Rotation = 0
+					end
+				end
+			end
+
 			drag_button.MouseButton1Down:Connect(function()
 				dragging = true
 				start_pos = vec2(mouse.X, mouse.Y)
 				original_pos = element.Position
+				element.AnchorPoint = vec2(0, 0)
 			end)
 
 			drag_button.MouseButton1Up:Connect(function()
 				if dragging then
 					dragging = false
 					
-					-- Smart snapping
-					local holder_size = holder.AbsoluteSize
 					local holder_pos = holder.AbsolutePosition
 					local element_abs_pos = element.AbsolutePosition
-					local element_size = element.AbsoluteSize
+					local holder_size = holder.AbsoluteSize
 					
-					-- Calculate relative position
-					local rel_x = element_abs_pos.X - holder_pos.X
-					local rel_y = element_abs_pos.Y - holder_pos.Y
+					local rel_x = element_abs_pos.X - holder_pos.X + element.AbsoluteSize.X / 2
+					local rel_y = element_abs_pos.Y - holder_pos.Y + element.AbsoluteSize.Y / 2
 					
-					-- Snap to edges
-					local snap_x = rel_x
-					local snap_y = rel_y
-					
-					-- Center X snapping
-					local center_x = (holder_size.X - element_size.X) / 2
-					if math.abs(rel_x - center_x) < snap_distance then
-						snap_x = center_x
-					end
-					
-					-- Left edge snapping
-					if math.abs(rel_x) < snap_distance then
-						snap_x = 0
-					end
-					
-					-- Right edge snapping
-					local right_edge = holder_size.X - element_size.X
-					if math.abs(rel_x - right_edge) < snap_distance then
-						snap_x = right_edge
-					end
-					
-					-- Top edge snapping
-					if math.abs(rel_y) < snap_distance then
-						snap_y = 0
-					end
-					
-					-- Bottom edge snapping
-					local bottom_edge = holder_size.Y - element_size.Y
-					if math.abs(rel_y - bottom_edge) < snap_distance then
-						snap_y = bottom_edge
-					end
-					
-					-- Apply snapped position
-					element.Position = dim2(0, snap_x, 0, snap_y)
+					local zone = get_zone(rel_x, rel_y, holder_size)
+					apply_zone_lock(zone)
 				end
 			end)
 
@@ -2429,10 +2452,10 @@
 			end
 
 			-- Make ESP elements draggable
-			library:make_esp_draggable(objects["name"], objects["holder"], 15)
-			library:make_esp_draggable(objects["healthbar_holder"], objects["holder"], 15)
-			library:make_esp_draggable(objects["distance"], objects["holder"], 15)
-			library:make_esp_draggable(objects["weapon"], objects["holder"], 15)
+			library:make_esp_draggable(objects["name"], objects["holder"], "text")
+			library:make_esp_draggable(objects["healthbar_holder"], objects["holder"], "healthbar")
+			library:make_esp_draggable(objects["distance"], objects["holder"], "text")
+			library:make_esp_draggable(objects["weapon"], objects["holder"], "text")
 
 			task.spawn(function()
 				while true do 
