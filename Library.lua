@@ -1932,6 +1932,98 @@
 
 		end 
 
+		-- Helper function for dragging ESP elements with snapping
+		function library:make_esp_draggable(element, holder, snap_distance)
+			snap_distance = snap_distance or 20
+			local dragging = false
+			local start_pos
+			local original_pos
+
+			-- Create invisible drag button
+			local drag_button = library:create("TextButton", {
+				Parent = element,
+				Size = dim2(1, 0, 1, 0),
+				BackgroundTransparency = 1,
+				Text = "",
+				ZIndex = 10,
+				Active = false,
+			})
+
+			drag_button.MouseButton1Down:Connect(function()
+				dragging = true
+				start_pos = vec2(mouse.X, mouse.Y)
+				original_pos = element.Position
+			end)
+
+			drag_button.MouseButton1Up:Connect(function()
+				if dragging then
+					dragging = false
+					
+					-- Smart snapping
+					local holder_size = holder.AbsoluteSize
+					local holder_pos = holder.AbsolutePosition
+					local element_abs_pos = element.AbsolutePosition
+					local element_size = element.AbsoluteSize
+					
+					-- Calculate relative position
+					local rel_x = element_abs_pos.X - holder_pos.X
+					local rel_y = element_abs_pos.Y - holder_pos.Y
+					
+					-- Snap to edges
+					local snap_x = rel_x
+					local snap_y = rel_y
+					
+					-- Center X snapping
+					local center_x = (holder_size.X - element_size.X) / 2
+					if math.abs(rel_x - center_x) < snap_distance then
+						snap_x = center_x
+					end
+					
+					-- Left edge snapping
+					if math.abs(rel_x) < snap_distance then
+						snap_x = 0
+					end
+					
+					-- Right edge snapping
+					local right_edge = holder_size.X - element_size.X
+					if math.abs(rel_x - right_edge) < snap_distance then
+						snap_x = right_edge
+					end
+					
+					-- Top edge snapping
+					if math.abs(rel_y) < snap_distance then
+						snap_y = 0
+					end
+					
+					-- Bottom edge snapping
+					local bottom_edge = holder_size.Y - element_size.Y
+					if math.abs(rel_y - bottom_edge) < snap_distance then
+						snap_y = bottom_edge
+					end
+					
+					-- Apply snapped position
+					element.Position = dim2(0, snap_x, 0, snap_y)
+				end
+			end)
+
+			library:connection(uis.InputChanged, function(input)
+				if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+					local delta = vec2(mouse.X - start_pos.X, mouse.Y - start_pos.Y)
+					local new_x = math.clamp(
+						original_pos.X.Offset + delta.X,
+						0,
+						holder.AbsoluteSize.X - element.AbsoluteSize.X
+					)
+					local new_y = math.clamp(
+						original_pos.Y.Offset + delta.Y,
+						0,
+						holder.AbsoluteSize.Y - element.AbsoluteSize.Y
+					)
+					element.Position = dim2(0, new_x, 0, new_y)
+				end
+			end)
+		end
+
 		function library:esp_preview(properties)
 			local cfg = {items = {}, rotation = 0; objects = {};}
 
@@ -2335,6 +2427,12 @@
 					corner.Frame.BackgroundColor3 = flags["Box_Color"].Color
 				end
 			end
+
+			-- Make ESP elements draggable
+			library:make_esp_draggable(objects["name"], objects["holder"], 15)
+			library:make_esp_draggable(objects["healthbar_holder"], objects["holder"], 15)
+			library:make_esp_draggable(objects["distance"], objects["holder"], 15)
+			library:make_esp_draggable(objects["weapon"], objects["holder"], 15)
 
 			task.spawn(function()
 				while true do 
