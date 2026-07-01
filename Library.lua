@@ -1932,17 +1932,19 @@
 
 		end 
 
-		-- Fatality-style dragging with zone locking
-		function library:make_esp_draggable(element, holder, element_type)
+		-- Fatality-style dragging with zone locking and stacking
+		local esp_element_zones = {}
+		
+		function library:make_esp_draggable(element, holder, element_type, element_id)
 			local dragging = false
 			local start_pos
 			local original_pos
 			
 			local zones = {
-				top = {offset = -5, anchor = vec2(0.5, 1), axis = "x"},
-				bottom = {offset = 5, anchor = vec2(0.5, 0), axis = "x"},
-				left = {offset = -5, anchor = vec2(1, 0.5), axis = "y"},
-				right = {offset = 5, anchor = vec2(0, 0.5), axis = "y"}
+				top = {offset = -5, anchor = vec2(0.5, 1), axis = "x", spacing = 14},
+				bottom = {offset = 5, anchor = vec2(0.5, 0), axis = "x", spacing = 14},
+				left = {offset = -5, anchor = vec2(1, 0.5), axis = "y", spacing = 14},
+				right = {offset = 5, anchor = vec2(0, 0.5), axis = "y", spacing = 14}
 			}
 
 			local drag_button = library:create("TextButton", {
@@ -1954,7 +1956,10 @@
 				Active = false,
 			})
 
-			local function get_closest_zone(rel_x, rel_y, holder_size)
+			local function get_closest_zone(mouse_pos, holder_pos, holder_size)
+				local rel_x = mouse_pos.X - holder_pos.X
+				local rel_y = mouse_pos.Y - holder_pos.Y
+				
 				local dist_top = math.abs(rel_y)
 				local dist_bottom = math.abs(rel_y - holder_size.Y)
 				local dist_left = math.abs(rel_x)
@@ -1967,31 +1972,45 @@
 				elseif min_dist == dist_left then return "left"
 				else return "right" end
 			end
+			
+			local function get_stack_offset(zone)
+				local count = 0
+				for id, z in pairs(esp_element_zones) do
+					if z == zone and id ~= element_id then
+						count = count + 1
+					end
+				end
+				return count * zones[zone].spacing
+			end
 
 			local function snap_to_zone(zone, scale_pos)
+				esp_element_zones[element_id] = zone
+				
 				local zone_data = zones[zone]
+				local stack_offset = get_stack_offset(zone)
+				
 				element.AnchorPoint = zone_data.anchor
 				
 				if zone == "top" then
-					element.Position = dim2(scale_pos or 0.5, 0, 0, zone_data.offset)
+					element.Position = dim2(scale_pos or 0.5, 0, 0, zone_data.offset - stack_offset)
 					if element_type == "healthbar" then
 						element.Size = dim2(1, 0, 0, 4)
 						element.Rotation = 0
 					end
 				elseif zone == "bottom" then
-					element.Position = dim2(scale_pos or 0.5, 0, 1, zone_data.offset)
+					element.Position = dim2(scale_pos or 0.5, 0, 1, zone_data.offset + stack_offset)
 					if element_type == "healthbar" then
 						element.Size = dim2(1, 0, 0, 4)
 						element.Rotation = 0
 					end
 				elseif zone == "left" then
-					element.Position = dim2(0, zone_data.offset, scale_pos or 0.5, 0)
+					element.Position = dim2(0, zone_data.offset - stack_offset, scale_pos or 0.5, 0)
 					if element_type == "healthbar" then
 						element.Size = dim2(0, 4, 1, 0)
 						element.Rotation = 0
 					end
 				elseif zone == "right" then
-					element.Position = dim2(1, zone_data.offset, scale_pos or 0.5, 0)
+					element.Position = dim2(1, zone_data.offset + stack_offset, scale_pos or 0.5, 0)
 					if element_type == "healthbar" then
 						element.Size = dim2(0, 4, 1, 0)
 						element.Rotation = 0
@@ -2002,8 +2021,7 @@
 			drag_button.MouseButton1Down:Connect(function()
 				dragging = true
 				start_pos = vec2(mouse.X, mouse.Y)
-				original_pos = element.Position
-				element.AnchorPoint = vec2(0, 0)
+				element.AnchorPoint = vec2(0.5, 0.5)
 			end)
 
 			library:connection(uis.InputEnded, function(input)
@@ -2011,15 +2029,14 @@
 					dragging = false
 					
 					local holder_pos = holder.AbsolutePosition
-					local element_abs_pos = element.AbsolutePosition
 					local holder_size = holder.AbsoluteSize
-					local element_size = element.AbsoluteSize
+					local mouse_pos = vec2(mouse.X, mouse.Y)
 					
-					local rel_x = element_abs_pos.X - holder_pos.X + element_size.X / 2
-					local rel_y = element_abs_pos.Y - holder_pos.Y + element_size.Y / 2
-					
-					local zone = get_closest_zone(rel_x, rel_y, holder_size)
+					local zone = get_closest_zone(mouse_pos, holder_pos, holder_size)
 					local zone_data = zones[zone]
+					
+					local rel_x = mouse_pos.X - holder_pos.X
+					local rel_y = mouse_pos.Y - holder_pos.Y
 					
 					local scale_pos
 					if zone_data.axis == "x" then
@@ -2034,17 +2051,12 @@
 
 			library:connection(uis.InputChanged, function(input)
 				if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-					local delta = vec2(mouse.X - start_pos.X, mouse.Y - start_pos.Y)
-					local new_x = math.clamp(
-						original_pos.X.Offset + delta.X,
-						0,
-						holder.AbsoluteSize.X - element.AbsoluteSize.X
-					)
-					local new_y = math.clamp(
-						original_pos.Y.Offset + delta.Y,
-						0,
-						holder.AbsoluteSize.Y - element.AbsoluteSize.Y
-					)
+					local holder_pos = holder.AbsolutePosition
+					local holder_size = holder.AbsoluteSize
+					
+					local new_x = mouse.X - holder_pos.X
+					local new_y = mouse.Y - holder_pos.Y
+					
 					element.Position = dim2(0, new_x, 0, new_y)
 				end
 			end)
@@ -2455,10 +2467,10 @@
 			end
 
 			-- Make ESP elements draggable
-			library:make_esp_draggable(objects["name"], objects["holder"], "text")
-			library:make_esp_draggable(objects["healthbar_holder"], objects["holder"], "healthbar")
-			library:make_esp_draggable(objects["distance"], objects["holder"], "text")
-			library:make_esp_draggable(objects["weapon"], objects["holder"], "text")
+			library:make_esp_draggable(objects["name"], objects["holder"], "text", "name")
+			library:make_esp_draggable(objects["healthbar_holder"], objects["holder"], "healthbar", "healthbar")
+			library:make_esp_draggable(objects["distance"], objects["holder"], "text", "distance")
+			library:make_esp_draggable(objects["weapon"], objects["holder"], "text", "weapon")
 
 			task.spawn(function()
 				while true do 
