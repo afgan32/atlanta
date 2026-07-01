@@ -1934,11 +1934,18 @@
 
 		-- Fatality-style dragging with zone locking and stacking
 		local esp_element_zones = {}
+		local esp_element_orientations = {}
 		
 		function library:make_esp_draggable(element, holder, element_type, element_id)
 			local dragging = false
 			local start_pos
-			local original_pos
+			
+			local default_offsets = {
+				name = 0.5,
+				distance = 0.5,
+				weapon = 0.5,
+				healthbar = 0.5
+			}
 			
 			local zones = {
 				top = {offset = -5, anchor = vec2(0.5, 1), axis = "x", spacing = 14},
@@ -1983,37 +1990,46 @@
 				return count * zones[zone].spacing
 			end
 
-			local function snap_to_zone(zone, scale_pos)
+			local function snap_to_zone(zone)
 				esp_element_zones[element_id] = zone
 				
 				local zone_data = zones[zone]
 				local stack_offset = get_stack_offset(zone)
+				local scale_pos = default_offsets[element_id] or 0.5
 				
 				element.AnchorPoint = zone_data.anchor
 				
 				if zone == "top" then
-					element.Position = dim2(scale_pos or 0.5, 0, 0, zone_data.offset - stack_offset)
+					element.Position = dim2(scale_pos, 0, 0, zone_data.offset - stack_offset)
 					if element_type == "healthbar" then
-						element.Size = dim2(1, 0, 0, 4)
-						element.Rotation = 0
+						esp_element_orientations[element_id] = "horizontal"
+						element.Size = dim2(1, 0, 0, 3)
+						element.AnchorPoint = vec2(0.5, 0)
+						element.Position = dim2(0.5, 0, 0, -3)
 					end
 				elseif zone == "bottom" then
-					element.Position = dim2(scale_pos or 0.5, 0, 1, zone_data.offset + stack_offset)
+					element.Position = dim2(scale_pos, 0, 1, zone_data.offset + stack_offset)
 					if element_type == "healthbar" then
-						element.Size = dim2(1, 0, 0, 4)
-						element.Rotation = 0
+						esp_element_orientations[element_id] = "horizontal"
+						element.Size = dim2(1, 0, 0, 3)
+						element.AnchorPoint = vec2(0.5, 1)
+						element.Position = dim2(0.5, 0, 1, 3)
 					end
 				elseif zone == "left" then
-					element.Position = dim2(0, zone_data.offset - stack_offset, scale_pos or 0.5, 0)
+					element.Position = dim2(0, zone_data.offset - stack_offset, scale_pos, 0)
 					if element_type == "healthbar" then
+						esp_element_orientations[element_id] = "vertical"
 						element.Size = dim2(0, 4, 1, 0)
-						element.Rotation = 0
+						element.AnchorPoint = vec2(1, 0)
+						element.Position = dim2(0, -5, 0, 0)
 					end
 				elseif zone == "right" then
-					element.Position = dim2(1, zone_data.offset + stack_offset, scale_pos or 0.5, 0)
+					element.Position = dim2(1, zone_data.offset + stack_offset, scale_pos, 0)
 					if element_type == "healthbar" then
+						esp_element_orientations[element_id] = "vertical"
 						element.Size = dim2(0, 4, 1, 0)
-						element.Rotation = 0
+						element.AnchorPoint = vec2(0, 0)
+						element.Position = dim2(1, 5, 0, 0)
 					end
 				end
 			end
@@ -2033,26 +2049,13 @@
 					local mouse_pos = vec2(mouse.X, mouse.Y)
 					
 					local zone = get_closest_zone(mouse_pos, holder_pos, holder_size)
-					local zone_data = zones[zone]
-					
-					local rel_x = mouse_pos.X - holder_pos.X
-					local rel_y = mouse_pos.Y - holder_pos.Y
-					
-					local scale_pos
-					if zone_data.axis == "x" then
-						scale_pos = math.clamp(rel_x / holder_size.X, 0, 1)
-					else
-						scale_pos = math.clamp(rel_y / holder_size.Y, 0, 1)
-					end
-					
-					snap_to_zone(zone, scale_pos)
+					snap_to_zone(zone)
 				end
 			end)
 
 			library:connection(uis.InputChanged, function(input)
 				if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
 					local holder_pos = holder.AbsolutePosition
-					local holder_size = holder.AbsoluteSize
 					
 					local new_x = mouse.X - holder_pos.X
 					local new_y = mouse.Y - holder_pos.Y
@@ -2411,12 +2414,19 @@
 				end
 
 				local humanoid = character.Humanoid
-				
 				local multiplier = humanoid.MaxHealth * math.abs(math.sin(tick() * 2)) / humanoid.MaxHealth
-				local color = flags[ "Health_Low" ].Color:Lerp( flags["Health_High"].Color, multiplier)
+				local color = flags[ "Health_Low" ].Color:Lerp(flags["Health_High"].Color, multiplier)
 				
-				objects[ "healthbar" ].Size = UDim2.new(1, -2, multiplier, -2)
-				objects[ "healthbar" ].Position = UDim2.new(0, 1, 1 - multiplier, 1)
+				local orientation = esp_element_orientations["healthbar"] or "vertical"
+				
+				if orientation == "horizontal" then
+					objects[ "healthbar" ].Size = UDim2.new(multiplier, -2, 1, -2)
+					objects[ "healthbar" ].Position = UDim2.new(0, 1, 0, 1)
+				else
+					objects[ "healthbar" ].Size = UDim2.new(1, -2, multiplier, -2)
+					objects[ "healthbar" ].Position = UDim2.new(0, 1, 1 - multiplier, 1)
+				end
+				
 				objects[ "healthbar" ].BackgroundColor3 = color
 			end -- wtf why diff func defining
 
