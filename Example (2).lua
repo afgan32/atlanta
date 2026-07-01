@@ -1,4 +1,4 @@
-local library, themes = loadstring(game:HttpGet("https://raw.githubusercontent.com/i77lhm/Libraries/refs/heads/main/Atlanta/Library.lua"))()
+local library, themes = loadstring(game:HttpGet("https://raw.githubusercontent.com/afgan32/atlanta/refs/heads/main/Library.lua"))()
 
 local dim2 = UDim2.new
 local hex = Color3.fromHex 
