@@ -2423,7 +2423,7 @@
 					Parent = items.viewportframe;
 					Name = "\0";
 					BackgroundTransparency = 1;
-					Position = dim2(0.5, 0, 0.5, 50);
+					Position = dim2(0.5, 0, 0.5, 65);
 					BorderColor3 = rgb(0, 0, 0);
 					Size = dim2(0, 135, 0, 190);
 					BorderSizePixel = 0;
@@ -2794,6 +2794,114 @@
 			library:make_esp_draggable(objects["healthbar_holder"], objects["holder"], "healthbar", "healthbar")
 			library:make_esp_draggable(objects["distance"], objects["holder"], "text", "distance")
 			library:make_esp_draggable(objects["weapon"], objects["holder"], "text", "weapon")
+			
+			-- Initialize default zones and positions
+			task.defer(function()
+				-- Set initial zones
+				esp_element_zones["name"] = "top"
+				esp_element_orders["name"] = 1
+				
+				esp_element_zones["healthbar"] = "left"
+				esp_element_orders["healthbar"] = 1
+				
+				esp_element_zones["distance"] = "bottom"
+				esp_element_orders["distance"] = 1
+				
+				esp_element_zones["weapon"] = "bottom"
+				esp_element_orders["weapon"] = 2
+				
+				-- Update all zones to apply proper positions
+				local function update_zone_elements(zone)
+					local elements = {}
+					for id, z in pairs(esp_element_zones) do
+						if z == zone then
+							table.insert(elements, {id = id, order = esp_element_orders[id] or 999})
+						end
+					end
+					table.sort(elements, function(a, b) return a.order < b.order end)
+					
+					local zones = {
+						top = {offset = flags["esp_top_offset"] or -15, anchor = vec2(0.5, 0), axis = "x", spacing = flags["esp_tb_spacing"] or 14, dir = -1, y_offset = 0},
+						bottom = {offset = flags["esp_bottom_offset"] or 15, anchor = vec2(0.5, 1), axis = "x", spacing = flags["esp_tb_spacing"] or 14, dir = 1, y_offset = 0},
+						left = {offset = flags["esp_left_offset"] or 1, anchor = vec2(0, 0), axis = "y", spacing = flags["esp_lr_spacing"] or 80, dir = 1, y_offset = flags["esp_left_y_offset"] or 0},
+						right = {offset = flags["esp_right_offset"] or -1, anchor = vec2(1, 0), axis = "y", spacing = flags["esp_lr_spacing"] or 80, dir = 1, y_offset = flags["esp_right_y_offset"] or 0}
+					}
+					local zone_data = zones[zone]
+					local default_offsets = {name = 0.5, distance = 0.5, weapon = 0.5, healthbar = 0.5}
+					
+					for i, elem_data in ipairs(elements) do
+						local elem_id = elem_data.id
+						local elem_obj = objects[elem_id == "healthbar" and "healthbar_holder" or elem_id]
+						
+						if elem_obj then
+							local scale_pos = default_offsets[elem_id] or 0.5
+							local stack_offset = (i - 1) * zone_data.spacing * zone_data.dir
+							local final_offset = zone_data.offset + stack_offset
+							local y_offset = zone_data.y_offset or 0
+							
+							if zone == "top" then
+								if final_offset > (flags["esp_top_offset"] or -15) then
+									final_offset = flags["esp_top_offset"] or -15
+								end
+							elseif zone == "bottom" then
+								if final_offset < (flags["esp_bottom_offset"] or 15) then
+									final_offset = flags["esp_bottom_offset"] or 15
+								end
+							elseif zone == "left" then
+								final_offset = math.min(final_offset, flags["esp_left_max"] or 150)
+							elseif zone == "right" then
+								final_offset = math.max(final_offset, flags["esp_right_max"] or -150)
+							end
+							
+							local is_healthbar = elem_id == "healthbar"
+							elem_obj.AnchorPoint = zone_data.anchor
+							
+							if zone == "top" then
+								if is_healthbar then
+									esp_element_orientations[elem_id] = "horizontal"
+									elem_obj.Size = dim2(1, 0, 0, 3)
+									elem_obj.AnchorPoint = vec2(0.5, 0)
+									elem_obj.Position = dim2(0.5, 0, 0, -3)
+								else
+									elem_obj.Position = dim2(scale_pos, 0, 0, final_offset)
+								end
+							elseif zone == "bottom" then
+								if is_healthbar then
+									esp_element_orientations[elem_id] = "horizontal"
+									elem_obj.Size = dim2(1, 0, 0, 3)
+									elem_obj.AnchorPoint = vec2(0.5, 1)
+									elem_obj.Position = dim2(0.5, 0, 1, 3)
+								else
+									elem_obj.Position = dim2(scale_pos, 0, 1, final_offset)
+								end
+							elseif zone == "left" then
+								elem_obj.AnchorPoint = vec2(1, 0)
+								if is_healthbar then
+									esp_element_orientations[elem_id] = "vertical"
+									elem_obj.Size = dim2(0, 4, 1, 0)
+									elem_obj.Position = dim2(0, -3, 0, y_offset)
+								else
+									elem_obj.Position = dim2(0, final_offset, 0, y_offset)
+								end
+							elseif zone == "right" then
+								elem_obj.AnchorPoint = vec2(0, 0)
+								if is_healthbar then
+									esp_element_orientations[elem_id] = "vertical"
+									elem_obj.Size = dim2(0, 4, 1, 0)
+									elem_obj.Position = dim2(1, 3, 0, y_offset)
+								else
+									elem_obj.Position = dim2(1, final_offset, 0, y_offset)
+								end
+							end
+						end
+					end
+				end
+				
+				update_zone_elements("top")
+				update_zone_elements("bottom")
+				update_zone_elements("left")
+				update_zone_elements("right")
+			end)
 
 			task.spawn(function()
 				while true do 
