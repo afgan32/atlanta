@@ -1961,8 +1961,8 @@
 				-- Top zone
 				zone_highlights.top = library:create("Frame", {
 					Parent = holder,
-					BackgroundColor3 = themes.preset.glow,
-					BackgroundTransparency = 1,
+					BackgroundColor3 = themes.preset.accent,
+					BackgroundTransparency = 0.7,
 					BorderSizePixel = 0,
 					Size = dim2(1, 0, 0, 15),
 					Position = dim2(0, 0, 0, -20),
@@ -1970,19 +1970,20 @@
 					Visible = false,
 					ZIndex = 100
 				})
-				library:apply_theme(zone_highlights.top, "glow", "BackgroundColor3")
-				library:create("UIStroke", {
+				library:apply_theme(zone_highlights.top, "accent", "BackgroundColor3")
+				local top_stroke = library:create("UIStroke", {
 					Parent = zone_highlights.top,
 					Color = themes.preset.glow,
-					Thickness = 2,
-					Transparency = 0.3
+					Thickness = 1,
+					Transparency = 0
 				})
+				library:apply_theme(top_stroke, "glow", "Color")
 				
 				-- Bottom zone
 				zone_highlights.bottom = library:create("Frame", {
 					Parent = holder,
-					BackgroundColor3 = themes.preset.glow,
-					BackgroundTransparency = 1,
+					BackgroundColor3 = themes.preset.accent,
+					BackgroundTransparency = 0.7,
 					BorderSizePixel = 0,
 					Size = dim2(1, 0, 0, 15),
 					Position = dim2(0, 0, 1, 5),
@@ -1990,19 +1991,20 @@
 					Visible = false,
 					ZIndex = 100
 				})
-				library:apply_theme(zone_highlights.bottom, "glow", "BackgroundColor3")
-				library:create("UIStroke", {
+				library:apply_theme(zone_highlights.bottom, "accent", "BackgroundColor3")
+				local bottom_stroke = library:create("UIStroke", {
 					Parent = zone_highlights.bottom,
 					Color = themes.preset.glow,
-					Thickness = 2,
-					Transparency = 0.3
+					Thickness = 1,
+					Transparency = 0
 				})
+				library:apply_theme(bottom_stroke, "glow", "Color")
 				
 				-- Left zone
 				zone_highlights.left = library:create("Frame", {
 					Parent = holder,
-					BackgroundColor3 = themes.preset.glow,
-					BackgroundTransparency = 1,
+					BackgroundColor3 = themes.preset.accent,
+					BackgroundTransparency = 0.7,
 					BorderSizePixel = 0,
 					Size = dim2(0, 15, 1, 0),
 					Position = dim2(0, -20, 0, 0),
@@ -2010,19 +2012,20 @@
 					Visible = false,
 					ZIndex = 100
 				})
-				library:apply_theme(zone_highlights.left, "glow", "BackgroundColor3")
-				library:create("UIStroke", {
+				library:apply_theme(zone_highlights.left, "accent", "BackgroundColor3")
+				local left_stroke = library:create("UIStroke", {
 					Parent = zone_highlights.left,
 					Color = themes.preset.glow,
-					Thickness = 2,
-					Transparency = 0.3
+					Thickness = 1,
+					Transparency = 0
 				})
+				library:apply_theme(left_stroke, "glow", "Color")
 				
 				-- Right zone
 				zone_highlights.right = library:create("Frame", {
 					Parent = holder,
-					BackgroundColor3 = themes.preset.glow,
-					BackgroundTransparency = 1,
+					BackgroundColor3 = themes.preset.accent,
+					BackgroundTransparency = 0.7,
 					BorderSizePixel = 0,
 					Size = dim2(0, 15, 1, 0),
 					Position = dim2(1, 5, 0, 0),
@@ -2030,13 +2033,14 @@
 					Visible = false,
 					ZIndex = 100
 				})
-				library:apply_theme(zone_highlights.right, "glow", "BackgroundColor3")
-				library:create("UIStroke", {
+				library:apply_theme(zone_highlights.right, "accent", "BackgroundColor3")
+				local right_stroke = library:create("UIStroke", {
 					Parent = zone_highlights.right,
 					Color = themes.preset.glow,
-					Thickness = 2,
-					Transparency = 0.3
+					Thickness = 1,
+					Transparency = 0
 				})
+				library:apply_theme(right_stroke, "glow", "Color")
 				
 				zone_highlights.created = true
 			end
