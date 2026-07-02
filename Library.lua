@@ -1980,7 +1980,7 @@
 					BackgroundTransparency = 0.3,
 					BorderSizePixel = 0,
 					Size = dim2(0, 60, 0, 12),
-					Position = dim2(0.5, 0, 0, -20),
+					Position = dim2(0.5, 0, 0, -15),
 					AnchorPoint = vec2(0.5, 1),
 					Visible = false,
 					ZIndex = 200
@@ -2001,7 +2001,7 @@
 					BackgroundTransparency = 0.5,
 					BorderSizePixel = 0,
 					Size = dim2(0, 60, 0, 12),
-					Position = dim2(0.5, 0, 1, 8),
+					Position = dim2(0.5, 0, 1, 15),
 					AnchorPoint = vec2(0.5, 0),
 					Visible = false,
 					ZIndex = 100
