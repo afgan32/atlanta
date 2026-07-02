@@ -1948,10 +1948,68 @@
 		local esp_element_zones = {}
 		local esp_element_orientations = {}
 		local esp_element_orders = {}
+		local zone_highlights = {}
 		
 		function library:make_esp_draggable(element, holder, element_type, element_id)
 			local dragging = false
 			local start_pos
+			
+			-- Create zone highlights once
+			if not zone_highlights.created then
+				zone_highlights.top = library:create("Frame", {
+					Parent = holder,
+					BackgroundColor3 = themes.preset.accent,
+					BackgroundTransparency = 0.85,
+					BorderSizePixel = 0,
+					Size = dim2(1, 0, 0, 20),
+					Position = dim2(0, 0, 0, 0),
+					AnchorPoint = vec2(0, 0),
+					Visible = false,
+					ZIndex = 0
+				})
+				library:apply_theme(zone_highlights.top, "accent", "BackgroundColor3")
+				
+				zone_highlights.bottom = library:create("Frame", {
+					Parent = holder,
+					BackgroundColor3 = themes.preset.accent,
+					BackgroundTransparency = 0.85,
+					BorderSizePixel = 0,
+					Size = dim2(1, 0, 0, 20),
+					Position = dim2(0, 0, 1, 0),
+					AnchorPoint = vec2(0, 1),
+					Visible = false,
+					ZIndex = 0
+				})
+				library:apply_theme(zone_highlights.bottom, "accent", "BackgroundColor3")
+				
+				zone_highlights.left = library:create("Frame", {
+					Parent = holder,
+					BackgroundColor3 = themes.preset.accent,
+					BackgroundTransparency = 0.85,
+					BorderSizePixel = 0,
+					Size = dim2(0, 20, 1, 0),
+					Position = dim2(0, 0, 0, 0),
+					AnchorPoint = vec2(0, 0),
+					Visible = false,
+					ZIndex = 0
+				})
+				library:apply_theme(zone_highlights.left, "accent", "BackgroundColor3")
+				
+				zone_highlights.right = library:create("Frame", {
+					Parent = holder,
+					BackgroundColor3 = themes.preset.accent,
+					BackgroundTransparency = 0.85,
+					BorderSizePixel = 0,
+					Size = dim2(0, 20, 1, 0),
+					Position = dim2(1, 0, 0, 0),
+					AnchorPoint = vec2(1, 0),
+					Visible = false,
+					ZIndex = 0
+				})
+				library:apply_theme(zone_highlights.right, "accent", "BackgroundColor3")
+				
+				zone_highlights.created = true
+			end
 			
 			local default_offsets = {
 				name = 0.5,
@@ -1993,6 +2051,22 @@
 				elseif min_dist == dist_bottom then return "bottom"
 				elseif min_dist == dist_left then return "left"
 				else return "right" end
+			end
+			
+			local function show_zone_highlight(zone)
+				for name, highlight in pairs(zone_highlights) do
+					if name ~= "created" then
+						highlight.Visible = (name == zone)
+					end
+				end
+			end
+			
+			local function hide_zone_highlights()
+				for name, highlight in pairs(zone_highlights) do
+					if name ~= "created" then
+						highlight.Visible = false
+					end
+				end
 			end
 			
 			local function get_zone_elements(zone)
@@ -2095,6 +2169,7 @@
 			library:connection(uis.InputEnded, function(input)
 				if input.UserInputType == Enum.UserInputType.MouseButton1 and dragging then
 					dragging = false
+					hide_zone_highlights()
 					
 					local holder_pos = holder.AbsolutePosition
 					local holder_size = holder.AbsoluteSize
@@ -2108,11 +2183,17 @@
 			library:connection(uis.InputChanged, function(input)
 				if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
 					local holder_pos = holder.AbsolutePosition
+					local holder_size = holder.AbsoluteSize
+					local mouse_pos = vec2(mouse.X, mouse.Y)
 					
 					local new_x = mouse.X - holder_pos.X
 					local new_y = mouse.Y - holder_pos.Y
 					
 					element.Position = dim2(0, new_x, 0, new_y)
+					
+					-- Update zone highlight
+					local zone = get_closest_zone(mouse_pos, holder_pos, holder_size)
+					show_zone_highlight(zone)
 				end
 			end)
 		end
