@@ -2084,7 +2084,7 @@
 				local zone_data = zones[zone]
 				
 				if elem_type == "healthbar" then
-					-- Healthbar: filled line (solid background)
+					-- Healthbar: filled line (solid background) - exactly at healthbar position
 					highlight.BackgroundTransparency = 0.3
 					if zone == "top" then
 						highlight.Size = dim2(1, 0, 0, 3)
@@ -2104,7 +2104,7 @@
 						highlight.AnchorPoint = vec2(0, 0)
 					end
 				else
-					-- Text elements: outlined rectangle (transparent bg, visible stroke)
+					-- Text elements: outlined rectangle - use EXACT same position as elements
 					highlight.BackgroundTransparency = 0.9
 					local text_widths = {
 						name = 80,
@@ -2122,12 +2122,12 @@
 						highlight.Position = dim2(0.5, 0, 1, zone_data.offset)
 						highlight.AnchorPoint = vec2(0.5, 0)
 					elseif zone == "left" then
-						-- Position outside box on the left
+						-- Use exact same position as text elements
 						highlight.Size = dim2(0, width, 0, 12)
 						highlight.Position = dim2(0, zone_data.offset, 0, zone_data.y_offset)
 						highlight.AnchorPoint = vec2(0, 0)
 					elseif zone == "right" then
-						-- Position outside box on the right
+						-- Use exact same position as text elements
 						highlight.Size = dim2(0, width, 0, 12)
 						highlight.Position = dim2(1, zone_data.offset, 0, zone_data.y_offset)
 						highlight.AnchorPoint = vec2(0, 0)
