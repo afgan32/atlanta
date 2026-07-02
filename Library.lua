@@ -140,7 +140,8 @@
 				["Color"] = {}, 	
 			},
 			["glow"] = {
-				["ImageColor3"] = {}, 	
+				["ImageColor3"] = {},
+				["Color"] = {},
 			}, 
 			["high_contrast"] = {
 				["BackgroundColor3"] = {},
