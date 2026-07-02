@@ -2140,22 +2140,22 @@
 						element.Position = dim2(0.5, 0, 1, 3)
 					end
 				elseif zone == "left" then
+					element.AnchorPoint = vec2(1, 0)
 					if element_type == "healthbar" then
 						esp_element_orientations[element_id] = "vertical"
 						element.Size = dim2(0, 4, 1, 0)
-						element.AnchorPoint = vec2(1, 0)
 						element.Position = dim2(0, -5, 0, 0)
 					else
-						element.Position = dim2(0, final_offset, scale_pos, 0)
+						element.Position = dim2(0, final_offset, 0, 0)
 					end
 				elseif zone == "right" then
+					element.AnchorPoint = vec2(0, 0)
 					if element_type == "healthbar" then
 						esp_element_orientations[element_id] = "vertical"
 						element.Size = dim2(0, 4, 1, 0)
-						element.AnchorPoint = vec2(0, 0)
 						element.Position = dim2(1, 5, 0, 0)
 					else
-						element.Position = dim2(1, final_offset, scale_pos, 0)
+						element.Position = dim2(1, final_offset, 0, 0)
 					end
 				end
 			end
