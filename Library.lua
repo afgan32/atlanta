@@ -2003,14 +2003,14 @@
 			
 			-- Create zone highlights once
 			if not zone_highlights.created then
-				-- Top zone
+				-- Top zone (using current offset value 9)
 				zone_highlights.top = library:create("Frame", {
 					Parent = holder,
 					BackgroundColor3 = themes.preset.accent,
 					BackgroundTransparency = 0.3,
 					BorderSizePixel = 0,
 					Size = dim2(0, 60, 0, 12),
-					Position = dim2(0.5, 0, 0, -15),
+					Position = dim2(0.5, 0, 0, 9),
 					AnchorPoint = vec2(0.5, 1),
 					Visible = false,
 					ZIndex = 200
@@ -2024,14 +2024,14 @@
 				})
 				library:apply_theme(top_stroke, "glow", "Color")
 				
-				-- Bottom zone
+				-- Bottom zone (using current offset value -20)
 				zone_highlights.bottom = library:create("Frame", {
 					Parent = holder,
 					BackgroundColor3 = themes.preset.accent,
 					BackgroundTransparency = 0.5,
 					BorderSizePixel = 0,
 					Size = dim2(0, 60, 0, 12),
-					Position = dim2(0.5, 0, 1, 15),
+					Position = dim2(0.5, 0, 1, -20),
 					AnchorPoint = vec2(0.5, 0),
 					Visible = false,
 					ZIndex = 100
@@ -2045,7 +2045,7 @@
 				})
 				library:apply_theme(bottom_stroke, "glow", "Color")
 				
-				-- Left zone
+				-- Left zone (using current offset value 32, Y offset 0)
 				zone_highlights.left = library:create("Frame", {
 					Parent = holder,
 					BackgroundColor3 = themes.preset.accent,
@@ -2066,14 +2066,14 @@
 				})
 				library:apply_theme(left_stroke, "glow", "Color")
 				
-				-- Right zone
+				-- Right zone (using current offset value 1, Y offset 1)
 				zone_highlights.right = library:create("Frame", {
 					Parent = holder,
 					BackgroundColor3 = themes.preset.accent,
 					BackgroundTransparency = 0.5,
 					BorderSizePixel = 0,
 					Size = dim2(0, 60, 0, 12),
-					Position = dim2(1, -32, 0, 0),
+					Position = dim2(1, 1, 0, 1),
 					AnchorPoint = vec2(0, 0),
 					Visible = false,
 					ZIndex = 100
