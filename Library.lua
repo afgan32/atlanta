@@ -2068,26 +2068,26 @@
 				local zone_data = zones[zone]
 				
 				if elem_type == "healthbar" then
-					-- Healthbar: thin line outside box
+					-- Healthbar: thin line matching healthbar position
 					if zone == "top" then
 						highlight.Size = dim2(1, 0, 0, 3)
-						highlight.Position = dim2(0.5, 0, 0, -5)
+						highlight.Position = dim2(0.5, 0, 0, -3)
 						highlight.AnchorPoint = vec2(0.5, 1)
 					elseif zone == "bottom" then
 						highlight.Size = dim2(1, 0, 0, 3)
-						highlight.Position = dim2(0.5, 0, 1, 5)
+						highlight.Position = dim2(0.5, 0, 1, 3)
 						highlight.AnchorPoint = vec2(0.5, 0)
 					elseif zone == "left" then
 						highlight.Size = dim2(0, 4, 1, 0)
-						highlight.Position = dim2(0, -5, 0, 0)
+						highlight.Position = dim2(0, -3, 0, zone_data.y_offset)
 						highlight.AnchorPoint = vec2(1, 0)
 					elseif zone == "right" then
 						highlight.Size = dim2(0, 4, 1, 0)
-						highlight.Position = dim2(1, 5, 0, 0)
+						highlight.Position = dim2(1, 3, 0, zone_data.y_offset)
 						highlight.AnchorPoint = vec2(0, 0)
 					end
 				else
-					-- Text elements: size based on element, position outside box
+					-- Text elements: positioned outside box at actual element location
 					local text_widths = {
 						name = 80,
 						distance = 40,
@@ -2104,10 +2104,12 @@
 						highlight.Position = dim2(0.5, 0, 1, zone_data.offset)
 						highlight.AnchorPoint = vec2(0.5, 0)
 					elseif zone == "left" then
+						-- Position outside box on the left
 						highlight.Size = dim2(0, width, 0, 12)
 						highlight.Position = dim2(0, zone_data.offset, 0, zone_data.y_offset)
 						highlight.AnchorPoint = vec2(1, 0)
 					elseif zone == "right" then
+						-- Position outside box on the right
 						highlight.Size = dim2(0, width, 0, 12)
 						highlight.Position = dim2(1, zone_data.offset, 0, zone_data.y_offset)
 						highlight.AnchorPoint = vec2(0, 0)
@@ -2451,10 +2453,10 @@
 				items.viewportframe = library:create( "ViewportFrame" , {
 					Parent = self.holder;
 					BackgroundTransparency = 1;
-					Size = dim2(1, 0, 0, 220);
+					Size = dim2(1, 0, 0, 280);
 					BorderColor3 = rgb(0, 0, 0);
 					ZIndex = 1;
-					Position = dim2(0, 0, 0, 10);
+					Position = dim2(0, 0, 0, 30);
 					BorderSizePixel = 0;
 					BackgroundColor3 = rgb(255, 255, 255)
 				});
