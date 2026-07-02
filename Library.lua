@@ -2076,6 +2076,17 @@
 				}
 			end
 			
+			local function get_zone_elements(zone)
+				local elements = {}
+				for id, z in pairs(esp_element_zones) do
+					if z == zone then
+						table.insert(elements, {id = id, order = esp_element_orders[id] or 999})
+					end
+				end
+				table.sort(elements, function(a, b) return a.order < b.order end)
+				return elements
+			end
+			
 			local function update_zone_highlight_size(zone, elem_type)
 				local highlight = zone_highlights[zone]
 				if not highlight then return end
@@ -2210,17 +2221,6 @@
 						highlight.Visible = false
 					end
 				end
-			end
-			
-			local function get_zone_elements(zone)
-				local elements = {}
-				for id, z in pairs(esp_element_zones) do
-					if z == zone then
-						table.insert(elements, {id = id, order = esp_element_orders[id] or 999})
-					end
-				end
-				table.sort(elements, function(a, b) return a.order < b.order end)
-				return elements
 			end
 			
 			local function update_all_in_zone(zone)
