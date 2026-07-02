@@ -2422,7 +2422,7 @@
 					Parent = items.viewportframe;
 					Name = "\0";
 					BackgroundTransparency = 1;
-					Position = dim2(0.5, 0, 0.5, 30);
+					Position = dim2(0.5, 0, 0.5, 50);
 					BorderColor3 = rgb(0, 0, 0);
 					Size = dim2(0, 135, 0, 190);
 					BorderSizePixel = 0;
@@ -2431,7 +2431,7 @@
 				});
 				
 				objects[ "box_outline" ] = library:create( "UIStroke" , {
-					Parent = library.cache;
+					Parent = objects["holder"];
 					LineJoinMode = Enum.LineJoinMode.Miter
 				});
 				
@@ -2453,7 +2453,7 @@
 				});
 				
 				objects[ "box_handler" ] = library:create( "Frame" , {
-					Parent = library.cache;
+					Parent = objects["holder"];
 					Name = "\0";
 					BackgroundTransparency = 1;
 					Position = dim2(0, 1, 0, 1);
@@ -2490,7 +2490,7 @@
 					objects[ "corners" ] = library:create( "Frame" , {
 						Visible = true;
 						BorderColor3 = rgb(0, 0, 0);
-						Parent = library.cache;
+						Parent = objects["holder"];
 						BackgroundTransparency = 1;
 						Position = dim2(0, -1, 0, 2);
 						Name = "\0";
