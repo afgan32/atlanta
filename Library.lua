@@ -1793,7 +1793,7 @@
 				local holder = library:panel({
 					name = "ESP Preview", 
 					anchor_point = vec2(0, 0),
-					size = dim2(0, 300, 0, 525),
+					size = dim2(0, 350, 0, 575),
 					position = dim2(0, style.items.main_holder.AbsolutePosition.X, 0, style.items.main_holder.AbsolutePosition.Y + style.items.main_holder.AbsoluteSize.Y + 2),
 					image = "rbxassetid://77684377836328",
 				})  
@@ -1812,8 +1812,8 @@
 				debug_section:slider({name = "Right Y Offset", flag = "esp_right_y_offset", min = -50, max = 50, default = 0, interval = 1})
 				debug_section:slider({name = "Top/Bottom Spacing", flag = "esp_tb_spacing", min = 1, max = 30, default = 14, interval = 1})
 				debug_section:slider({name = "Left/Right Spacing", flag = "esp_lr_spacing", min = 1, max = 150, default = 80, interval = 1})
-				debug_section:slider({name = "Top Max Stack", flag = "esp_top_max", min = -50, max = 0, default = -17, interval = 1})
-				debug_section:slider({name = "Bottom Max Stack", flag = "esp_bottom_max", min = 0, max = 50, default = 14, interval = 1})
+				debug_section:slider({name = "Top Max Stack", flag = "esp_top_max", min = -50, max = 0, default = -50, interval = 1})
+				debug_section:slider({name = "Bottom Max Stack", flag = "esp_bottom_max", min = 0, max = 50, default = 50, interval = 1})
 				debug_section:slider({name = "Left Max Stack", flag = "esp_left_max", min = 0, max = 200, default = 150, interval = 1})
 				debug_section:slider({name = "Right Max Stack", flag = "esp_right_max", min = -200, max = 0, default = -150, interval = 1})
 			--  
@@ -1958,10 +1958,11 @@
 			
 			-- Create zone highlights once
 			if not zone_highlights.created then
+				-- Top zone
 				zone_highlights.top = library:create("Frame", {
 					Parent = holder,
-					BackgroundColor3 = themes.preset.accent,
-					BackgroundTransparency = 0.85,
+					BackgroundColor3 = themes.preset.glow,
+					BackgroundTransparency = 1,
 					BorderSizePixel = 0,
 					Size = dim2(1, 0, 0, 15),
 					Position = dim2(0, 0, 0, -20),
@@ -1969,12 +1970,19 @@
 					Visible = false,
 					ZIndex = 100
 				})
-				library:apply_theme(zone_highlights.top, "accent", "BackgroundColor3")
+				library:apply_theme(zone_highlights.top, "glow", "BackgroundColor3")
+				library:create("UIStroke", {
+					Parent = zone_highlights.top,
+					Color = themes.preset.glow,
+					Thickness = 2,
+					Transparency = 0.3
+				})
 				
+				-- Bottom zone
 				zone_highlights.bottom = library:create("Frame", {
 					Parent = holder,
-					BackgroundColor3 = themes.preset.accent,
-					BackgroundTransparency = 0.85,
+					BackgroundColor3 = themes.preset.glow,
+					BackgroundTransparency = 1,
 					BorderSizePixel = 0,
 					Size = dim2(1, 0, 0, 15),
 					Position = dim2(0, 0, 1, 5),
@@ -1982,12 +1990,19 @@
 					Visible = false,
 					ZIndex = 100
 				})
-				library:apply_theme(zone_highlights.bottom, "accent", "BackgroundColor3")
+				library:apply_theme(zone_highlights.bottom, "glow", "BackgroundColor3")
+				library:create("UIStroke", {
+					Parent = zone_highlights.bottom,
+					Color = themes.preset.glow,
+					Thickness = 2,
+					Transparency = 0.3
+				})
 				
+				-- Left zone
 				zone_highlights.left = library:create("Frame", {
 					Parent = holder,
-					BackgroundColor3 = themes.preset.accent,
-					BackgroundTransparency = 0.85,
+					BackgroundColor3 = themes.preset.glow,
+					BackgroundTransparency = 1,
 					BorderSizePixel = 0,
 					Size = dim2(0, 15, 1, 0),
 					Position = dim2(0, -20, 0, 0),
@@ -1995,12 +2010,19 @@
 					Visible = false,
 					ZIndex = 100
 				})
-				library:apply_theme(zone_highlights.left, "accent", "BackgroundColor3")
+				library:apply_theme(zone_highlights.left, "glow", "BackgroundColor3")
+				library:create("UIStroke", {
+					Parent = zone_highlights.left,
+					Color = themes.preset.glow,
+					Thickness = 2,
+					Transparency = 0.3
+				})
 				
+				-- Right zone
 				zone_highlights.right = library:create("Frame", {
 					Parent = holder,
-					BackgroundColor3 = themes.preset.accent,
-					BackgroundTransparency = 0.85,
+					BackgroundColor3 = themes.preset.glow,
+					BackgroundTransparency = 1,
 					BorderSizePixel = 0,
 					Size = dim2(0, 15, 1, 0),
 					Position = dim2(1, 5, 0, 0),
@@ -2008,7 +2030,13 @@
 					Visible = false,
 					ZIndex = 100
 				})
-				library:apply_theme(zone_highlights.right, "accent", "BackgroundColor3")
+				library:apply_theme(zone_highlights.right, "glow", "BackgroundColor3")
+				library:create("UIStroke", {
+					Parent = zone_highlights.right,
+					Color = themes.preset.glow,
+					Thickness = 2,
+					Transparency = 0.3
+				})
 				
 				zone_highlights.created = true
 			end
@@ -2169,7 +2197,88 @@
 				end
 			end
 
-			local function snap_to_zone(zone)
+			local swap_indicator = library:create("Frame", {
+				Parent = holder,
+				BackgroundColor3 = themes.preset.accent,
+				BackgroundTransparency = 0.7,
+				BorderSizePixel = 0,
+				Size = dim2(0, 2, 0, 20),
+				Position = dim2(0, 0, 0, 0),
+				Visible = false,
+				ZIndex = 101
+			})
+			library:apply_theme(swap_indicator, "accent", "BackgroundColor3")
+			
+			local function get_insert_position(zone, mouse_pos, holder_pos, holder_size)
+				local zone_elements = get_zone_elements(zone)
+				if #zone_elements == 0 then return 1 end
+				
+				local zones = get_zones()
+				local zone_data = zones[zone]
+				
+				for i, elem_data in ipairs(zone_elements) do
+					if elem_data.id == element_id then continue end
+					
+					-- Find element position
+					for _, child in pairs(holder:GetChildren()) do
+						if (child:IsA("Frame") or child:IsA("TextLabel")) and child.Name:find(elem_data.id) then
+							local elem_pos = child.AbsolutePosition
+							local elem_size = child.AbsoluteSize
+							
+							if zone == "top" or zone == "bottom" then
+								local elem_y = elem_pos.Y + (zone == "top" and elem_size.Y or 0)
+								if mouse_pos.Y < elem_y then
+									return i
+								end
+							else
+								local elem_x = elem_pos.X + (zone == "left" and elem_size.X or 0)
+								if mouse_pos.X < elem_x then
+									return i
+								end
+							end
+							break
+						end
+					end
+				end
+				
+				return #zone_elements + 1
+			end
+			
+			local function show_swap_indicator(zone, insert_pos)
+				if insert_pos == 0 then
+					swap_indicator.Visible = false
+					return
+				end
+				
+				local zone_elements = get_zone_elements(zone)
+				if insert_pos > #zone_elements then
+					swap_indicator.Visible = false
+					return
+				end
+				
+				local target_elem = zone_elements[insert_pos]
+				for _, child in pairs(holder:GetChildren()) do
+					if (child:IsA("Frame") or child:IsA("TextLabel")) and child.Name:find(target_elem.id) then
+						local pos = child.Position
+						local size = child.AbsoluteSize
+						
+						if zone == "top" or zone == "bottom" then
+							swap_indicator.Size = dim2(1, 0, 0, 2)
+							swap_indicator.Position = dim2(pos.X.Scale, pos.X.Offset, pos.Y.Scale, pos.Y.Offset - 1)
+						else
+							swap_indicator.Size = dim2(0, 2, 1, 0)
+							swap_indicator.Position = dim2(pos.X.Scale, pos.X.Offset - 1, pos.Y.Scale, pos.Y.Offset)
+						end
+						
+						swap_indicator.Visible = true
+						return
+					end
+				end
+				
+				swap_indicator.Visible = false
+			end
+			
+			local function snap_to_zone(zone, insert_pos)
 				local old_zone = esp_element_zones[element_id]
 				
 				if old_zone and old_zone ~= zone then
@@ -2180,66 +2289,27 @@
 				
 				esp_element_zones[element_id] = zone
 				
+				-- Get current elements and adjust their orders
 				local zone_elements = get_zone_elements(zone)
-				local my_order = #zone_elements
-				esp_element_orders[element_id] = my_order
+				local final_insert_pos = insert_pos or (#zone_elements + 1)
+				
+				-- Remove current element from list if exists
+				for i, elem in ipairs(zone_elements) do
+					if elem.id == element_id then
+						table.remove(zone_elements, i)
+						break
+					end
+				end
+				
+				-- Insert at new position
+				table.insert(zone_elements, math.min(final_insert_pos, #zone_elements + 1), {id = element_id, order = 0})
+				
+				-- Update all orders
+				for i, elem in ipairs(zone_elements) do
+					esp_element_orders[elem.id] = i
+				end
 				
 				update_all_in_zone(zone)
-				
-				local zones = get_zones()
-				local zone_data = zones[zone]
-				local scale_pos = default_offsets[element_id] or 0.5
-				local stack_offset = (my_order - 1) * zone_data.spacing * zone_data.dir
-				
-				-- Clamp offsets based on zone
-				local final_offset = zone_data.offset + stack_offset
-				if zone == "top" then
-					final_offset = math.max(final_offset, flags["esp_top_max"] or -17)
-				elseif zone == "bottom" then
-					final_offset = math.min(final_offset, flags["esp_bottom_max"] or 14)
-				elseif zone == "left" then
-					final_offset = math.min(final_offset, flags["esp_left_max"] or 150)
-				elseif zone == "right" then
-					final_offset = math.max(final_offset, flags["esp_right_max"] or -150)
-				end
-				
-				element.AnchorPoint = zone_data.anchor
-				
-				if zone == "top" then
-					element.Position = dim2(scale_pos, 0, 0, final_offset)
-					if element_type == "healthbar" then
-						esp_element_orientations[element_id] = "horizontal"
-						element.Size = dim2(1, 0, 0, 3)
-						element.AnchorPoint = vec2(0.5, 0)
-						element.Position = dim2(0.5, 0, 0, -3)
-					end
-				elseif zone == "bottom" then
-					element.Position = dim2(scale_pos, 0, 1, final_offset)
-					if element_type == "healthbar" then
-						esp_element_orientations[element_id] = "horizontal"
-						element.Size = dim2(1, 0, 0, 3)
-						element.AnchorPoint = vec2(0.5, 1)
-						element.Position = dim2(0.5, 0, 1, 3)
-					end
-				elseif zone == "left" then
-					element.AnchorPoint = vec2(1, 0)
-					if element_type == "healthbar" then
-						esp_element_orientations[element_id] = "vertical"
-						element.Size = dim2(0, 4, 1, 0)
-						element.Position = dim2(0, -5, 0, 0)
-					else
-						element.Position = dim2(0, final_offset, 0, 0)
-					end
-				elseif zone == "right" then
-					element.AnchorPoint = vec2(0, 0)
-					if element_type == "healthbar" then
-						esp_element_orientations[element_id] = "vertical"
-						element.Size = dim2(0, 4, 1, 0)
-						element.Position = dim2(1, 5, 0, 0)
-					else
-						element.Position = dim2(1, final_offset, 0, 0)
-					end
-				end
 			end
 
 			drag_button.MouseButton1Down:Connect(function()
@@ -2252,13 +2322,15 @@
 				if input.UserInputType == Enum.UserInputType.MouseButton1 and dragging then
 					dragging = false
 					hide_zone_highlights()
+					swap_indicator.Visible = false
 					
 					local holder_pos = holder.AbsolutePosition
 					local holder_size = holder.AbsoluteSize
 					local mouse_pos = vec2(mouse.X, mouse.Y)
 					
 					local zone = get_closest_zone(mouse_pos, holder_pos, holder_size)
-					snap_to_zone(zone)
+					local insert_pos = get_insert_position(zone, mouse_pos, holder_pos, holder_size)
+					snap_to_zone(zone, insert_pos)
 				end
 			end)
 
@@ -2276,6 +2348,15 @@
 					-- Update zone highlight
 					local zone = get_closest_zone(mouse_pos, holder_pos, holder_size)
 					show_zone_highlight(zone)
+					
+					-- Show swap indicator if in same zone
+					local current_zone = esp_element_zones[element_id]
+					if zone == current_zone then
+						local insert_pos = get_insert_position(zone, mouse_pos, holder_pos, holder_size)
+						show_swap_indicator(zone, insert_pos)
+					else
+						swap_indicator.Visible = false
+					end
 				end
 			end)
 		end
@@ -2325,7 +2406,7 @@
 					Parent = items.viewportframe;
 					Name = "\0";
 					BackgroundTransparency = 1;
-					Position = dim2(0.5, 0, 0.5, 20);
+					Position = dim2(0.5, 0, 0.5, 30);
 					BorderColor3 = rgb(0, 0, 0);
 					Size = dim2(0, 135, 0, 190);
 					BorderSizePixel = 0;
