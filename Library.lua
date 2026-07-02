@@ -1823,8 +1823,8 @@
 				debug_section:slider({name = "Right Offset", flag = "esp_right_offset", min = -200, max = 200, default = -32, interval = 1})
 				debug_section:slider({name = "Left Y Offset", flag = "esp_left_y_offset", min = -50, max = 50, default = 0, interval = 1})
 				debug_section:slider({name = "Right Y Offset", flag = "esp_right_y_offset", min = -50, max = 50, default = 0, interval = 1})
-				debug_section:slider({name = "Avatar Y Offset", flag = "esp_avatar_y_offset", min = 0, max = 250, default = 80, interval = 1})
-				debug_section:slider({name = "Character Y Offset", flag = "esp_character_y_offset", min = -5, max = 5, default = 1, interval = 0.1})
+				debug_section:slider({name = "Avatar Y Offset", flag = "esp_avatar_y_offset", min = 0, max = 250, default = 24, interval = 1})
+				debug_section:slider({name = "Character Y Offset", flag = "esp_character_y_offset", min = -5, max = 5, default = -0.3, interval = 0.1})
 				debug_section:slider({name = "Top/Bottom Spacing", flag = "esp_tb_spacing", min = 1, max = 30, default = 14, interval = 1})
 				debug_section:slider({name = "Left/Right Spacing", flag = "esp_lr_spacing", min = 1, max = 150, default = 80, interval = 1})
 				debug_section:slider({name = "Top Max Stack", flag = "esp_top_max", min = -50, max = 0, default = -50, interval = 1})
@@ -2023,7 +2023,7 @@
 					BorderSizePixel = 0,
 					Size = dim2(0, 60, 0, 12),
 					Position = dim2(0, 32, 0, 0),
-					AnchorPoint = vec2(1, 0),
+					AnchorPoint = vec2(0, 0),
 					Visible = false,
 					ZIndex = 100
 				})
@@ -2197,6 +2197,19 @@
 				local zones = get_zones()
 				local zone_data = zones[zone]
 				
+				-- Check if healthbar is in this zone
+				local has_healthbar = false
+				local healthbar_height = 0
+				for _, elem_data in ipairs(elements) do
+					if elem_data.id == "healthbar" then
+						has_healthbar = true
+						if zone == "left" or zone == "right" then
+							healthbar_height = 190 -- Full height for vertical healthbar
+						end
+						break
+					end
+				end
+				
 				for i, elem_data in ipairs(elements) do
 					local elem_id = elem_data.id
 					local elem_obj = nil
@@ -2211,7 +2224,20 @@
 					
 					if elem_obj then
 						local scale_pos = default_offsets[elem_id] or 0.5
-						local stack_offset = (i - 1) * zone_data.spacing * zone_data.dir
+						local is_healthbar = elem_id == "healthbar"
+						
+						-- Calculate stack offset
+						local text_index = i
+						if has_healthbar and not is_healthbar and (zone == "left" or zone == "right") then
+							text_index = i - 1 -- Adjust index for text elements after healthbar
+						end
+						
+						local stack_offset = (text_index - 1) * zone_data.spacing * zone_data.dir
+						if has_healthbar and not is_healthbar and (zone == "left" or zone == "right") then
+							-- Start text after healthbar
+							stack_offset = healthbar_height + (text_index * zone_data.spacing * zone_data.dir)
+						end
+						
 						local final_offset = zone_data.offset + stack_offset
 						local y_offset = zone_data.y_offset or 0
 						
@@ -2230,7 +2256,6 @@
 							final_offset = math.max(final_offset, flags["esp_right_max"] or -150)
 						end
 						
-						local is_healthbar = elem_id == "healthbar"
 						elem_obj.AnchorPoint = zone_data.anchor
 						
 						if zone == "top" then
@@ -2252,24 +2277,26 @@
 								elem_obj.Position = dim2(scale_pos, 0, 1, final_offset)
 							end
 						elseif zone == "left" then
-							elem_obj.AnchorPoint = vec2(1, 0)
 							if is_healthbar then
+								elem_obj.AnchorPoint = vec2(1, 0)
 								esp_element_orientations[elem_id] = "vertical"
 								elem_obj.Size = dim2(0, 4, 1, 0)
 								elem_obj.Position = dim2(0, -3, 0, y_offset)
 							else
-								-- For left: stack vertically (Y changes, X fixed)
+								-- For left: text aligned to left edge (AnchorPoint 0,0)
+								elem_obj.AnchorPoint = vec2(0, 0)
 								local x_offset = zone_data.offset
 								elem_obj.Position = dim2(0, x_offset, 0, y_offset + stack_offset)
 							end
 						elseif zone == "right" then
-							elem_obj.AnchorPoint = vec2(0, 0)
 							if is_healthbar then
+								elem_obj.AnchorPoint = vec2(0, 0)
 								esp_element_orientations[elem_id] = "vertical"
 								elem_obj.Size = dim2(0, 4, 1, 0)
 								elem_obj.Position = dim2(1, 3, 0, y_offset)
 							else
-								-- For right: stack vertically (Y changes, X fixed)
+								-- For right: text aligned to left edge (AnchorPoint 0,0)
+								elem_obj.AnchorPoint = vec2(0, 0)
 								local x_offset = zone_data.offset
 								elem_obj.Position = dim2(1, x_offset, 0, y_offset + stack_offset)
 							end
