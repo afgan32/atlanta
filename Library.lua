@@ -1661,13 +1661,25 @@
 					library:update_theme("low_contrast", flags["low_contrast"].Color)
 				end})
 				:colorpicker({name = "High", color = themes.preset.high_contrast, flag = "high_contrast", callback = function(color)
-					library:update_theme("contrast", rgbseq{
-						rgbkey(0, flags["low_contrast"].Color),
-						rgbkey(1, flags["high_contrast"].Color)
-					})
+					if (flags["high_contrast"] and flags["low_contrast"]) then 
+						library:update_theme("contrast", rgbseq{
+							rgbkey(0, flags["low_contrast"].Color),
+							rgbkey(1, flags["high_contrast"].Color)
+						})
+					end
 
 					library:update_theme("high_contrast", flags["high_contrast"].Color)
 				end})
+				
+				-- Initialize contrast on load
+				task.defer(function()
+					if flags["high_contrast"] and flags["low_contrast"] then
+						library:update_theme("contrast", rgbseq{
+							rgbkey(0, flags["low_contrast"].Color),
+							rgbkey(1, flags["high_contrast"].Color)
+						})
+					end
+				end)
 				section:label({name = "Inline"})
 				:colorpicker({name = "Inline", color = themes.preset.inline, callback = function(color, alpha)
 					library:update_theme("inline", color)
@@ -2425,11 +2437,11 @@
 				
 				objects[ "name" ] = library:create( "TextLabel" , {
 					FontFace = library.font;
-					Parent = library.cache;
+					Parent = objects["holder"];
 					TextColor3 = flags["Name_Color"].Color;
 					BorderColor3 = rgb(0, 0, 0);
 					Text = lp.DisplayName;
-					Name = "\0";
+					Name = "name";
 					TextStrokeTransparency = 0;
 					AnchorPoint = vec2(0, 1);
 					Size = dim2(1, 0, 0, 0);
@@ -2651,8 +2663,8 @@
 				-- Healthbar
 					objects[ "healthbar_holder" ] = library:create( "Frame" , {
 						AnchorPoint = vec2(1, 0);
-						Parent = library.cache;
-						Name = "\0";
+						Parent = objects["holder"];
+						Name = "healthbar";
 						Position = dim2(0, -5, 0, 0);
 						BorderColor3 = rgb(0, 0, 0);
 						Size = dim2(0, 4, 1, 0);
@@ -2677,9 +2689,9 @@
 						TextColor3 = flags["Distance_Color"].Color;
 						BorderColor3 = rgb(0, 0, 0);
 						Text = "127st";
-						Parent = library.cache;
+						Parent = objects["holder"];
 						TextStrokeTransparency = 0;
-						Name = "\0";
+						Name = "distance";
 						Size = dim2(1, 0, 0, 0);
 						BackgroundTransparency = 1;
 						Position = dim2(0, 0, 1, 5);
@@ -2695,9 +2707,9 @@
 						TextColor3 = flags["Weapon_Color"].Color;
 						BorderColor3 = rgb(0, 0, 0);
 						Text = "[ Weapon ]";
-						Parent = library.cache;
+						Parent = objects["holder"];
 						TextStrokeTransparency = 0;
-						Name = "\0";
+						Name = "weapon";
 						Size = dim2(1, 0, 0, 0);
 						BackgroundTransparency = 1;
 						Position = dim2(0, 0, 1, 19);
