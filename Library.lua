@@ -2078,6 +2078,7 @@
 			
 			local function get_zone_elements(zone)
 				local elements = {}
+				if not esp_element_zones then return elements end
 				for id, z in pairs(esp_element_zones) do
 					if z == zone then
 						table.insert(elements, {id = id, order = esp_element_orders[id] or 999})
