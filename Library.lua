@@ -2060,6 +2060,22 @@
 				zone_highlights.created = true
 			end
 			
+			local default_offsets = {
+				name = 0.5,
+				distance = 0.5,
+				weapon = 0.5,
+				healthbar = 0.5
+			}
+			
+			local function get_zones()
+				return {
+					top = {offset = flags["esp_top_offset"] or -15, anchor = vec2(0.5, 0), axis = "x", spacing = flags["esp_tb_spacing"] or 14, dir = -1, y_offset = 0},
+					bottom = {offset = flags["esp_bottom_offset"] or 15, anchor = vec2(0.5, 1), axis = "x", spacing = flags["esp_tb_spacing"] or 14, dir = 1, y_offset = 0},
+					left = {offset = flags["esp_left_offset"] or 32, anchor = vec2(0, 0), axis = "x", spacing = 15, dir = 1, y_offset = flags["esp_left_y_offset"] or 0},
+					right = {offset = flags["esp_right_offset"] or -32, anchor = vec2(1, 0), axis = "x", spacing = 15, dir = 1, y_offset = flags["esp_right_y_offset"] or 0}
+				}
+			end
+			
 			local function update_zone_highlight_size(zone, elem_type)
 				local highlight = zone_highlights[zone]
 				if not highlight then return end
@@ -2115,22 +2131,6 @@
 						highlight.AnchorPoint = vec2(0, 0)
 					end
 				end
-			end
-			
-			local default_offsets = {
-				name = 0.5,
-				distance = 0.5,
-				weapon = 0.5,
-				healthbar = 0.5
-			}
-			
-			local function get_zones()
-				return {
-					top = {offset = flags["esp_top_offset"] or -15, anchor = vec2(0.5, 0), axis = "x", spacing = flags["esp_tb_spacing"] or 14, dir = -1, y_offset = 0},
-					bottom = {offset = flags["esp_bottom_offset"] or 15, anchor = vec2(0.5, 1), axis = "x", spacing = flags["esp_tb_spacing"] or 14, dir = 1, y_offset = 0},
-					left = {offset = flags["esp_left_offset"] or 32, anchor = vec2(0, 0), axis = "x", spacing = 15, dir = 1, y_offset = flags["esp_left_y_offset"] or 0},
-					right = {offset = flags["esp_right_offset"] or -32, anchor = vec2(1, 0), axis = "x", spacing = 15, dir = 1, y_offset = flags["esp_right_y_offset"] or 0}
-				}
 			end
 
 			local drag_button = library:create("TextButton", {
