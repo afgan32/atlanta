@@ -2031,10 +2031,22 @@
 				local scale_pos = default_offsets[element_id] or 0.5
 				local stack_offset = (my_order - 1) * zone_data.spacing * zone_data.dir
 				
+				-- Clamp offsets based on zone
+				local final_offset = zone_data.offset + stack_offset
+				if zone == "top" then
+					final_offset = math.max(final_offset, -17)
+				elseif zone == "bottom" then
+					final_offset = math.min(final_offset, 14)
+				elseif zone == "left" then
+					final_offset = math.max(final_offset, zone_data.offset)
+				elseif zone == "right" then
+					final_offset = math.min(final_offset, zone_data.offset)
+				end
+				
 				element.AnchorPoint = zone_data.anchor
 				
 				if zone == "top" then
-					element.Position = dim2(scale_pos, 0, 0, zone_data.offset + stack_offset)
+					element.Position = dim2(scale_pos, 0, 0, final_offset)
 					if element_type == "healthbar" then
 						esp_element_orientations[element_id] = "horizontal"
 						element.Size = dim2(1, 0, 0, 3)
@@ -2042,7 +2054,7 @@
 						element.Position = dim2(0.5, 0, 0, -3)
 					end
 				elseif zone == "bottom" then
-					element.Position = dim2(scale_pos, 0, 1, zone_data.offset + stack_offset)
+					element.Position = dim2(scale_pos, 0, 1, final_offset)
 					if element_type == "healthbar" then
 						esp_element_orientations[element_id] = "horizontal"
 						element.Size = dim2(1, 0, 0, 3)
@@ -2050,20 +2062,22 @@
 						element.Position = dim2(0.5, 0, 1, 3)
 					end
 				elseif zone == "left" then
-					element.Position = dim2(0, zone_data.offset + stack_offset, scale_pos, 0)
 					if element_type == "healthbar" then
 						esp_element_orientations[element_id] = "vertical"
 						element.Size = dim2(0, 4, 1, 0)
 						element.AnchorPoint = vec2(1, 0)
 						element.Position = dim2(0, -5, 0, 0)
+					else
+						element.Position = dim2(0, final_offset, scale_pos, 0)
 					end
 				elseif zone == "right" then
-					element.Position = dim2(1, zone_data.offset + stack_offset, scale_pos, 0)
 					if element_type == "healthbar" then
 						esp_element_orientations[element_id] = "vertical"
 						element.Size = dim2(0, 4, 1, 0)
 						element.AnchorPoint = vec2(0, 0)
 						element.Position = dim2(1, 5, 0, 0)
+					else
+						element.Position = dim2(1, final_offset, scale_pos, 0)
 					end
 				end
 			end
