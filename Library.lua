@@ -2083,8 +2083,40 @@
 				local zones = get_zones()
 				local zone_data = zones[zone]
 				
-				if elem_type == "healthbar" then
-					-- Healthbar: filled line (solid background) - exactly at healthbar position
+				-- Calculate where element will be positioned in this zone
+				local zone_elements = get_zone_elements(zone)
+				local insert_order = #zone_elements + 1 -- Will be inserted at end
+				
+				-- Check if healthbar is in zone
+				local has_healthbar = false
+				local healthbar_height = 0
+				for _, elem_data in ipairs(zone_elements) do
+					if elem_data.id == "healthbar" then
+						has_healthbar = true
+						if zone == "left" or zone == "right" then
+							healthbar_height = 190
+						end
+						break
+					end
+				end
+				
+				local is_healthbar = elem_type == "healthbar"
+				
+				-- Calculate stack offset
+				local text_index = insert_order
+				if has_healthbar and not is_healthbar and (zone == "left" or zone == "right") then
+					text_index = insert_order - 1
+				end
+				
+				local stack_offset = (text_index - 1) * zone_data.spacing * zone_data.dir
+				if has_healthbar and not is_healthbar and (zone == "left" or zone == "right") then
+					stack_offset = healthbar_height + (text_index * zone_data.spacing * zone_data.dir)
+				end
+				
+				local y_offset = zone_data.y_offset or 0
+				
+				if is_healthbar then
+					-- Healthbar: filled line
 					highlight.BackgroundTransparency = 0.3
 					if zone == "top" then
 						highlight.Size = dim2(1, 0, 0, 3)
@@ -2096,15 +2128,15 @@
 						highlight.AnchorPoint = vec2(0.5, 0)
 					elseif zone == "left" then
 						highlight.Size = dim2(0, 4, 1, 0)
-						highlight.Position = dim2(0, -3, 0, zone_data.y_offset)
+						highlight.Position = dim2(0, -3, 0, y_offset)
 						highlight.AnchorPoint = vec2(1, 0)
 					elseif zone == "right" then
 						highlight.Size = dim2(0, 4, 1, 0)
-						highlight.Position = dim2(1, 3, 0, zone_data.y_offset)
+						highlight.Position = dim2(1, 3, 0, y_offset)
 						highlight.AnchorPoint = vec2(0, 0)
 					end
 				else
-					-- Text elements: outlined rectangle - use EXACT same position as elements
+					-- Text elements: outlined rectangle
 					highlight.BackgroundTransparency = 0.9
 					local text_widths = {
 						name = 80,
@@ -2114,22 +2146,24 @@
 					local width = text_widths[element_id] or 60
 					
 					if zone == "top" then
+						local final_offset = zone_data.offset + stack_offset
 						highlight.Size = dim2(0, width, 0, 12)
-						highlight.Position = dim2(0.5, 0, 0, zone_data.offset)
+						highlight.Position = dim2(0.5, 0, 0, final_offset)
 						highlight.AnchorPoint = vec2(0.5, 1)
 					elseif zone == "bottom" then
+						local final_offset = zone_data.offset + stack_offset
 						highlight.Size = dim2(0, width, 0, 12)
-						highlight.Position = dim2(0.5, 0, 1, zone_data.offset)
+						highlight.Position = dim2(0.5, 0, 1, final_offset)
 						highlight.AnchorPoint = vec2(0.5, 0)
 					elseif zone == "left" then
-						-- Use exact same position as text elements
+						local x_offset = zone_data.offset
 						highlight.Size = dim2(0, width, 0, 12)
-						highlight.Position = dim2(0, zone_data.offset, 0, zone_data.y_offset)
+						highlight.Position = dim2(0, x_offset, 0, y_offset + stack_offset)
 						highlight.AnchorPoint = vec2(0, 0)
 					elseif zone == "right" then
-						-- Use exact same position as text elements
+						local x_offset = zone_data.offset
 						highlight.Size = dim2(0, width, 0, 12)
-						highlight.Position = dim2(1, zone_data.offset, 0, zone_data.y_offset)
+						highlight.Position = dim2(1, x_offset, 0, y_offset + stack_offset)
 						highlight.AnchorPoint = vec2(0, 0)
 					end
 				end
