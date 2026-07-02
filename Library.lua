@@ -1982,7 +1982,7 @@
 					Size = dim2(0, 60, 0, 12),
 					Position = dim2(0.5, 0, 0, -20),
 					AnchorPoint = vec2(0.5, 1),
-					Visible = true,
+					Visible = false,
 					ZIndex = 200
 				})
 				library:apply_theme(zone_highlights.top, "accent", "BackgroundColor3")
@@ -2084,7 +2084,8 @@
 				local zone_data = zones[zone]
 				
 				if elem_type == "healthbar" then
-					-- Healthbar: thin line matching healthbar position
+					-- Healthbar: filled line (solid background)
+					highlight.BackgroundTransparency = 0.3
 					if zone == "top" then
 						highlight.Size = dim2(1, 0, 0, 3)
 						highlight.Position = dim2(0.5, 0, 0, -3)
@@ -2103,7 +2104,8 @@
 						highlight.AnchorPoint = vec2(0, 0)
 					end
 				else
-					-- Text elements: positioned outside box at actual element location
+					-- Text elements: outlined rectangle (transparent bg, visible stroke)
+					highlight.BackgroundTransparency = 0.9
 					local text_widths = {
 						name = 80,
 						distance = 40,
@@ -2123,7 +2125,7 @@
 						-- Position outside box on the left
 						highlight.Size = dim2(0, width, 0, 12)
 						highlight.Position = dim2(0, zone_data.offset, 0, zone_data.y_offset)
-						highlight.AnchorPoint = vec2(1, 0)
+						highlight.AnchorPoint = vec2(0, 0)
 					elseif zone == "right" then
 						-- Position outside box on the right
 						highlight.Size = dim2(0, width, 0, 12)
