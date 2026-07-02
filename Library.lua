@@ -1825,6 +1825,45 @@
 				debug_section:slider({name = "Right Y Offset", flag = "esp_right_y_offset", min = -50, max = 50, default = 0, interval = 1})
 				debug_section:slider({name = "Avatar Y Offset", flag = "esp_avatar_y_offset", min = 0, max = 250, default = 24, interval = 1})
 				debug_section:slider({name = "Character Y Offset", flag = "esp_character_y_offset", min = -5, max = 5, default = -0.3, interval = 0.1})
+				
+				-- Debug controls
+				local debug_free_drag = false
+				debug_section:toggle({name = "Free Drag (No Snap)", flag = "esp_debug_free_drag", callback = function(bool)
+					debug_free_drag = bool
+				end})
+				
+				debug_section:toggle({name = "Show All Zones", flag = "esp_debug_show_zones", default = false, callback = function(bool)
+					if zone_highlights.created then
+						for name, highlight in pairs(zone_highlights) do
+							if name ~= "created" then
+								highlight.Visible = bool
+							end
+						end
+					end
+				end})
+				
+				debug_section:button({name = "Print Element Positions", callback = function()
+					print("=== ESP Element Positions ===")
+					for id, zone in pairs(esp_element_zones) do
+						local order = esp_element_orders[id] or 0
+						print(string.format("Element: %s | Zone: %s | Order: %d", id, zone, order))
+					end
+					print("=== Zone Highlights ===")
+					if zone_highlights.created then
+						for name, highlight in pairs(zone_highlights) do
+							if name ~= "created" then
+								local pos = highlight.Position
+								local size = highlight.Size
+								local anchor = highlight.AnchorPoint
+								print(string.format("Zone: %s | Pos: %.2f,%.2f,%.2f,%.2f | Size: %.2f,%.2f,%.2f,%.2f | Anchor: %.2f,%.2f", 
+									name, pos.X.Scale, pos.X.Offset, pos.Y.Scale, pos.Y.Offset,
+									size.X.Scale, size.X.Offset, size.Y.Scale, size.Y.Offset,
+									anchor.X, anchor.Y))
+							end
+						end
+					end
+					print("=============================")
+				end})
 				debug_section:slider({name = "Top/Bottom Spacing", flag = "esp_tb_spacing", min = 1, max = 30, default = 14, interval = 1})
 				debug_section:slider({name = "Left/Right Spacing", flag = "esp_lr_spacing", min = 1, max = 150, default = 80, interval = 1})
 				debug_section:slider({name = "Top Max Stack", flag = "esp_top_max", min = -50, max = 0, default = -50, interval = 1})
@@ -2058,6 +2097,16 @@
 				library:apply_theme(right_stroke, "glow", "Color")
 				
 				zone_highlights.created = true
+			end
+			
+			-- Make zone highlights draggable and resizable for debug
+			if zone_highlights.created then
+				for name, highlight in pairs(zone_highlights) do
+					if name ~= "created" then
+						library:draggify(highlight)
+						library:make_resizable(highlight)
+					end
+				end
 			end
 			
 			local default_offsets = {
@@ -2468,6 +2517,12 @@
 					dragging = false
 					hide_zone_highlights()
 					swap_indicator.Visible = false
+					
+					-- Check if free drag mode is enabled
+					if flags["esp_debug_free_drag"] then
+						-- Free drag: don't snap, keep current position
+						return
+					end
 					
 					local holder_pos = holder.AbsolutePosition
 					local holder_size = holder.AbsoluteSize
