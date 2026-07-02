@@ -2088,10 +2088,8 @@
 				library:apply_theme(right_stroke, "glow", "Color")
 				
 				zone_highlights.created = true
-			end
-			
-			-- Make zone highlights draggable and resizable for debug
-			if zone_highlights.created then
+				
+				-- Make zone highlights draggable and resizable immediately
 				for name, highlight in pairs(zone_highlights) do
 					if name ~= "created" then
 						library:draggify(highlight)
@@ -2251,12 +2249,27 @@
 				update_zone_highlight_size(zone, element_type)
 				for name, highlight in pairs(zone_highlights) do
 					if name ~= "created" then
-						highlight.Visible = (name == zone)
+						-- Show all zones if debug flag is on, otherwise only show current zone
+						if flags["esp_debug_show_zones"] then
+							highlight.Visible = true
+						else
+							highlight.Visible = (name == zone)
+						end
 					end
 				end
 			end
 			
 			local function hide_zone_highlights()
+				-- Don't hide if show all zones debug is enabled
+				if flags["esp_debug_show_zones"] then
+					for name, highlight in pairs(zone_highlights) do
+						if name ~= "created" then
+							highlight.Visible = true
+						end
+					end
+					return
+				end
+				
 				for name, highlight in pairs(zone_highlights) do
 					if name ~= "created" then
 						highlight.Visible = false
