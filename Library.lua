@@ -1824,6 +1824,7 @@
 				debug_section:slider({name = "Left Y Offset", flag = "esp_left_y_offset", min = -50, max = 50, default = 0, interval = 1})
 				debug_section:slider({name = "Right Y Offset", flag = "esp_right_y_offset", min = -50, max = 50, default = 0, interval = 1})
 				debug_section:slider({name = "Avatar Y Offset", flag = "esp_avatar_y_offset", min = 0, max = 150, default = 80, interval = 1})
+				debug_section:slider({name = "Character Y Offset", flag = "esp_character_y_offset", min = -5, max = 5, default = 1, interval = 0.1})
 				debug_section:slider({name = "Top/Bottom Spacing", flag = "esp_tb_spacing", min = 1, max = 30, default = 14, interval = 1})
 				debug_section:slider({name = "Left/Right Spacing", flag = "esp_lr_spacing", min = 1, max = 150, default = 80, interval = 1})
 				debug_section:slider({name = "Top Max Stack", flag = "esp_top_max", min = -50, max = 0, default = -50, interval = 1})
@@ -2063,26 +2064,53 @@
 				local highlight = zone_highlights[zone]
 				if not highlight then return end
 				
+				local zones = get_zones()
+				local zone_data = zones[zone]
+				
 				if elem_type == "healthbar" then
-					-- Healthbar: thin line
-					if zone == "top" or zone == "bottom" then
+					-- Healthbar: thin line outside box
+					if zone == "top" then
 						highlight.Size = dim2(1, 0, 0, 3)
-					else
+						highlight.Position = dim2(0.5, 0, 0, -5)
+						highlight.AnchorPoint = vec2(0.5, 1)
+					elseif zone == "bottom" then
+						highlight.Size = dim2(1, 0, 0, 3)
+						highlight.Position = dim2(0.5, 0, 1, 5)
+						highlight.AnchorPoint = vec2(0.5, 0)
+					elseif zone == "left" then
 						highlight.Size = dim2(0, 4, 1, 0)
+						highlight.Position = dim2(0, -5, 0, 0)
+						highlight.AnchorPoint = vec2(1, 0)
+					elseif zone == "right" then
+						highlight.Size = dim2(0, 4, 1, 0)
+						highlight.Position = dim2(1, 5, 0, 0)
+						highlight.AnchorPoint = vec2(0, 0)
 					end
 				else
-					-- Text elements: based on text width
+					-- Text elements: size based on element, position outside box
 					local text_widths = {
 						name = 80,
 						distance = 40,
 						weapon = 70
 					}
-					local width = text_widths[elem_type] or 60
+					local width = text_widths[element_id] or 60
 					
-					if zone == "top" or zone == "bottom" then
+					if zone == "top" then
 						highlight.Size = dim2(0, width, 0, 12)
-					else
+						highlight.Position = dim2(0.5, 0, 0, zone_data.offset)
+						highlight.AnchorPoint = vec2(0.5, 1)
+					elseif zone == "bottom" then
 						highlight.Size = dim2(0, width, 0, 12)
+						highlight.Position = dim2(0.5, 0, 1, zone_data.offset)
+						highlight.AnchorPoint = vec2(0.5, 0)
+					elseif zone == "left" then
+						highlight.Size = dim2(0, width, 0, 12)
+						highlight.Position = dim2(0, zone_data.offset, 0, zone_data.y_offset)
+						highlight.AnchorPoint = vec2(1, 0)
+					elseif zone == "right" then
+						highlight.Size = dim2(0, width, 0, 12)
+						highlight.Position = dim2(1, zone_data.offset, 0, zone_data.y_offset)
+						highlight.AnchorPoint = vec2(0, 0)
 					end
 				end
 			end
@@ -2448,7 +2476,8 @@
 				library:connection(run.RenderStepped, function()
 					task.wait()
 					cfg.rotation += 0.5
-					character:SetPrimaryPartCFrame(cfr(Vector3.new(0, 1, -6)) * angle(0, math.rad(cfg.rotation), 0))
+					local char_y = flags["esp_character_y_offset"] or 1
+					character:SetPrimaryPartCFrame(cfr(Vector3.new(0, char_y, -6)) * angle(0, math.rad(cfg.rotation), 0))
 				end)
 			end 
 
