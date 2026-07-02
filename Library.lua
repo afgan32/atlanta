@@ -2085,6 +2085,85 @@
 				for i, elem in ipairs(elements) do
 					esp_element_orders[elem.id] = i
 				end
+				
+				-- Update positions for all elements in zone
+				local zones = get_zones()
+				local zone_data = zones[zone]
+				
+				for i, elem_data in ipairs(elements) do
+					local elem_id = elem_data.id
+					local elem_obj = nil
+					
+					-- Find element object
+					for _, child in pairs(holder:GetChildren()) do
+						if (child:IsA("Frame") or child:IsA("TextLabel")) and child.Name:find(elem_id) then
+							elem_obj = child
+							break
+						end
+					end
+					
+					if elem_obj then
+						local scale_pos = default_offsets[elem_id] or 0.5
+						local stack_offset = (i - 1) * zone_data.spacing * zone_data.dir
+						local final_offset = zone_data.offset + stack_offset
+						
+						-- Correct clamping
+						if zone == "top" then
+							if final_offset > (flags["esp_top_offset"] or -15) then
+								final_offset = flags["esp_top_offset"] or -15
+							end
+						elseif zone == "bottom" then
+							if final_offset < (flags["esp_bottom_offset"] or 15) then
+								final_offset = flags["esp_bottom_offset"] or 15
+							end
+						elseif zone == "left" then
+							final_offset = math.min(final_offset, flags["esp_left_max"] or 150)
+						elseif zone == "right" then
+							final_offset = math.max(final_offset, flags["esp_right_max"] or -150)
+						end
+						
+						local is_healthbar = elem_id == "healthbar"
+						elem_obj.AnchorPoint = zone_data.anchor
+						
+						if zone == "top" then
+							if is_healthbar then
+								esp_element_orientations[elem_id] = "horizontal"
+								elem_obj.Size = dim2(1, 0, 0, 3)
+								elem_obj.AnchorPoint = vec2(0.5, 0)
+								elem_obj.Position = dim2(0.5, 0, 0, -3)
+							else
+								elem_obj.Position = dim2(scale_pos, 0, 0, final_offset)
+							end
+						elseif zone == "bottom" then
+							if is_healthbar then
+								esp_element_orientations[elem_id] = "horizontal"
+								elem_obj.Size = dim2(1, 0, 0, 3)
+								elem_obj.AnchorPoint = vec2(0.5, 1)
+								elem_obj.Position = dim2(0.5, 0, 1, 3)
+							else
+								elem_obj.Position = dim2(scale_pos, 0, 1, final_offset)
+							end
+						elseif zone == "left" then
+							elem_obj.AnchorPoint = vec2(1, 0)
+							if is_healthbar then
+								esp_element_orientations[elem_id] = "vertical"
+								elem_obj.Size = dim2(0, 4, 1, 0)
+								elem_obj.Position = dim2(0, -5, 0, 0)
+							else
+								elem_obj.Position = dim2(0, final_offset, 0, 0)
+							end
+						elseif zone == "right" then
+							elem_obj.AnchorPoint = vec2(0, 0)
+							if is_healthbar then
+								esp_element_orientations[elem_id] = "vertical"
+								elem_obj.Size = dim2(0, 4, 1, 0)
+								elem_obj.Position = dim2(1, 5, 0, 0)
+							else
+								elem_obj.Position = dim2(1, final_offset, 0, 0)
+							end
+						end
+					end
+				end
 			end
 
 			local function snap_to_zone(zone)
@@ -2243,7 +2322,7 @@
 					Parent = items.viewportframe;
 					Name = "\0";
 					BackgroundTransparency = 1;
-					Position = dim2(0.5, 0, 0.5, 0);
+					Position = dim2(0.5, 0, 0.5, 20);
 					BorderColor3 = rgb(0, 0, 0);
 					Size = dim2(0, 135, 0, 190);
 					BorderSizePixel = 0;
