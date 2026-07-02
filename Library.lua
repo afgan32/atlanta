@@ -1806,8 +1806,10 @@
 				local debug_section = column:section({name = "Debug Offsets"})
 				debug_section:slider({name = "Top Offset", flag = "esp_top_offset", min = -20, max = 20, default = -15, interval = 1})
 				debug_section:slider({name = "Bottom Offset", flag = "esp_bottom_offset", min = -20, max = 20, default = 15, interval = 1})
-				debug_section:slider({name = "Left Offset", flag = "esp_left_offset", min = -20, max = 20, default = 1, interval = 1})
-				debug_section:slider({name = "Right Offset", flag = "esp_right_offset", min = -20, max = 20, default = -1, interval = 1})
+				debug_section:slider({name = "Left Offset", flag = "esp_left_offset", min = -200, max = 200, default = 1, interval = 1})
+				debug_section:slider({name = "Right Offset", flag = "esp_right_offset", min = -200, max = 200, default = -1, interval = 1})
+				debug_section:slider({name = "Left Y Offset", flag = "esp_left_y_offset", min = -50, max = 50, default = 0, interval = 1})
+				debug_section:slider({name = "Right Y Offset", flag = "esp_right_y_offset", min = -50, max = 50, default = 0, interval = 1})
 				debug_section:slider({name = "Top/Bottom Spacing", flag = "esp_tb_spacing", min = 1, max = 30, default = 14, interval = 1})
 				debug_section:slider({name = "Left/Right Spacing", flag = "esp_lr_spacing", min = 1, max = 150, default = 80, interval = 1})
 				debug_section:slider({name = "Top Max Stack", flag = "esp_top_max", min = -50, max = 0, default = -17, interval = 1})
@@ -1961,8 +1963,8 @@
 					BackgroundColor3 = themes.preset.accent,
 					BackgroundTransparency = 0.85,
 					BorderSizePixel = 0,
-					Size = dim2(1, 0, 0, 20),
-					Position = dim2(0, 0, 0, 0),
+					Size = dim2(1, 0, 0, 15),
+					Position = dim2(0, 0, 0, -20),
 					AnchorPoint = vec2(0, 0),
 					Visible = false,
 					ZIndex = 100
@@ -1974,9 +1976,9 @@
 					BackgroundColor3 = themes.preset.accent,
 					BackgroundTransparency = 0.85,
 					BorderSizePixel = 0,
-					Size = dim2(1, 0, 0, 20),
-					Position = dim2(0, 0, 1, 0),
-					AnchorPoint = vec2(0, 1),
+					Size = dim2(1, 0, 0, 15),
+					Position = dim2(0, 0, 1, 5),
+					AnchorPoint = vec2(0, 0),
 					Visible = false,
 					ZIndex = 100
 				})
@@ -1987,8 +1989,8 @@
 					BackgroundColor3 = themes.preset.accent,
 					BackgroundTransparency = 0.85,
 					BorderSizePixel = 0,
-					Size = dim2(0, 20, 1, 0),
-					Position = dim2(0, 0, 0, 0),
+					Size = dim2(0, 15, 1, 0),
+					Position = dim2(0, -20, 0, 0),
 					AnchorPoint = vec2(0, 0),
 					Visible = false,
 					ZIndex = 100
@@ -2000,9 +2002,9 @@
 					BackgroundColor3 = themes.preset.accent,
 					BackgroundTransparency = 0.85,
 					BorderSizePixel = 0,
-					Size = dim2(0, 20, 1, 0),
-					Position = dim2(1, 0, 0, 0),
-					AnchorPoint = vec2(1, 0),
+					Size = dim2(0, 15, 1, 0),
+					Position = dim2(1, 5, 0, 0),
+					AnchorPoint = vec2(0, 0),
 					Visible = false,
 					ZIndex = 100
 				})
@@ -2020,10 +2022,10 @@
 			
 			local function get_zones()
 				return {
-					top = {offset = flags["esp_top_offset"] or -15, anchor = vec2(0.5, 0), axis = "x", spacing = flags["esp_tb_spacing"] or 14, dir = 1},
-					bottom = {offset = flags["esp_bottom_offset"] or 15, anchor = vec2(0.5, 1), axis = "x", spacing = flags["esp_tb_spacing"] or 14, dir = -1},
-					left = {offset = flags["esp_left_offset"] or 1, anchor = vec2(0, 0.5), axis = "y", spacing = flags["esp_lr_spacing"] or 80, dir = 1},
-					right = {offset = flags["esp_right_offset"] or -1, anchor = vec2(1, 0.5), axis = "y", spacing = flags["esp_lr_spacing"] or 80, dir = -1}
+					top = {offset = flags["esp_top_offset"] or -15, anchor = vec2(0.5, 0), axis = "x", spacing = flags["esp_tb_spacing"] or 14, dir = -1, y_offset = 0},
+					bottom = {offset = flags["esp_bottom_offset"] or 15, anchor = vec2(0.5, 1), axis = "x", spacing = flags["esp_tb_spacing"] or 14, dir = 1, y_offset = 0},
+					left = {offset = flags["esp_left_offset"] or 1, anchor = vec2(0, 0), axis = "y", spacing = flags["esp_lr_spacing"] or 80, dir = 1, y_offset = flags["esp_left_y_offset"] or 0},
+					right = {offset = flags["esp_right_offset"] or -1, anchor = vec2(1, 0), axis = "y", spacing = flags["esp_lr_spacing"] or 80, dir = 1, y_offset = flags["esp_right_y_offset"] or 0}
 				}
 			end
 
@@ -2106,6 +2108,7 @@
 						local scale_pos = default_offsets[elem_id] or 0.5
 						local stack_offset = (i - 1) * zone_data.spacing * zone_data.dir
 						local final_offset = zone_data.offset + stack_offset
+						local y_offset = zone_data.y_offset or 0
 						
 						-- Correct clamping
 						if zone == "top" then
@@ -2148,18 +2151,18 @@
 							if is_healthbar then
 								esp_element_orientations[elem_id] = "vertical"
 								elem_obj.Size = dim2(0, 4, 1, 0)
-								elem_obj.Position = dim2(0, -5, 0, 0)
+								elem_obj.Position = dim2(0, -3, 0, y_offset)
 							else
-								elem_obj.Position = dim2(0, final_offset, 0, 0)
+								elem_obj.Position = dim2(0, final_offset, 0, y_offset)
 							end
 						elseif zone == "right" then
 							elem_obj.AnchorPoint = vec2(0, 0)
 							if is_healthbar then
 								esp_element_orientations[elem_id] = "vertical"
 								elem_obj.Size = dim2(0, 4, 1, 0)
-								elem_obj.Position = dim2(1, 5, 0, 0)
+								elem_obj.Position = dim2(1, 3, 0, y_offset)
 							else
-								elem_obj.Position = dim2(1, final_offset, 0, 0)
+								elem_obj.Position = dim2(1, final_offset, 0, y_offset)
 							end
 						end
 					end
