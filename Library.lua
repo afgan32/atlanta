@@ -1827,38 +1827,29 @@
 				debug_section:slider({name = "Character Y Offset", flag = "esp_character_y_offset", min = -5, max = 5, default = -0.3, interval = 0.1})
 				
 				-- Debug controls
-				local debug_free_drag = false
-				debug_section:toggle({name = "Free Drag (No Snap)", flag = "esp_debug_free_drag", callback = function(bool)
-					debug_free_drag = bool
-				end})
+				debug_section:toggle({name = "Free Drag (No Snap)", flag = "esp_debug_free_drag", default = false})
 				
-				debug_section:toggle({name = "Show All Zones", flag = "esp_debug_show_zones", default = false, callback = function(bool)
-					if zone_highlights.created then
-						for name, highlight in pairs(zone_highlights) do
-							if name ~= "created" then
-								highlight.Visible = bool
-							end
-						end
-					end
-				end})
+				debug_section:toggle({name = "Show All Zones", flag = "esp_debug_show_zones", default = false})
 				
 				debug_section:button({name = "Print Element Positions", callback = function()
 					print("=== ESP Element Positions ===")
-					for id, zone in pairs(esp_element_zones) do
-						local order = esp_element_orders[id] or 0
-						print(string.format("Element: %s | Zone: %s | Order: %d", id, zone, order))
+					if esp_element_zones then
+						for id, zone in pairs(esp_element_zones) do
+							local order = esp_element_orders[id] or 0
+							print(string.format("Element: %s | Zone: %s | Order: %d", id, zone, order))
+						end
 					end
-					print("=== Zone Highlights ===")
-					if zone_highlights.created then
+					print("=== Debug Info ===")
+					print("Free Drag Mode:", flags["esp_debug_free_drag"] or false)
+					print("Show All Zones:", flags["esp_debug_show_zones"] or false)
+					if zone_highlights and zone_highlights.created then
+						print("=== Zone Highlight Positions ===")
+						local holder_abs = holder and holder.AbsolutePosition or vec2(0, 0)
 						for name, highlight in pairs(zone_highlights) do
-							if name ~= "created" then
-								local pos = highlight.Position
-								local size = highlight.Size
-								local anchor = highlight.AnchorPoint
-								print(string.format("Zone: %s | Pos: %.2f,%.2f,%.2f,%.2f | Size: %.2f,%.2f,%.2f,%.2f | Anchor: %.2f,%.2f", 
-									name, pos.X.Scale, pos.X.Offset, pos.Y.Scale, pos.Y.Offset,
-									size.X.Scale, size.X.Offset, size.Y.Scale, size.Y.Offset,
-									anchor.X, anchor.Y))
+							if name ~= "created" and highlight then
+								local rel_pos = vec2(highlight.Position.X.Offset, highlight.Position.Y.Offset)
+								print(string.format("Zone: %s | Pos: %.1f, %.1f | Size: %.1f, %.1f", 
+									name, rel_pos.X, rel_pos.Y, highlight.Size.X.Offset, highlight.Size.Y.Offset))
 							end
 						end
 					end
