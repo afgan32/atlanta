@@ -1823,7 +1823,7 @@
 				debug_section:slider({name = "Right Offset", flag = "esp_right_offset", min = -200, max = 200, default = -32, interval = 1})
 				debug_section:slider({name = "Left Y Offset", flag = "esp_left_y_offset", min = -50, max = 50, default = 0, interval = 1})
 				debug_section:slider({name = "Right Y Offset", flag = "esp_right_y_offset", min = -50, max = 50, default = 0, interval = 1})
-				debug_section:slider({name = "Avatar Y Offset", flag = "esp_avatar_y_offset", min = 0, max = 150, default = 80, interval = 1})
+				debug_section:slider({name = "Avatar Y Offset", flag = "esp_avatar_y_offset", min = 0, max = 250, default = 80, interval = 1})
 				debug_section:slider({name = "Character Y Offset", flag = "esp_character_y_offset", min = -5, max = 5, default = 1, interval = 0.1})
 				debug_section:slider({name = "Top/Bottom Spacing", flag = "esp_tb_spacing", min = 1, max = 30, default = 14, interval = 1})
 				debug_section:slider({name = "Left/Right Spacing", flag = "esp_lr_spacing", min = 1, max = 150, default = 80, interval = 1})
@@ -1979,9 +1979,9 @@
 					BackgroundColor3 = themes.preset.accent,
 					BackgroundTransparency = 0.5,
 					BorderSizePixel = 0,
-					Size = dim2(0, 0, 0, 12),
+					Size = dim2(0, 60, 0, 12),
 					Position = dim2(0.5, 0, 0, -20),
-					AnchorPoint = vec2(0.5, 0),
+					AnchorPoint = vec2(0.5, 1),
 					Visible = false,
 					ZIndex = 100
 				})
@@ -2000,7 +2000,7 @@
 					BackgroundColor3 = themes.preset.accent,
 					BackgroundTransparency = 0.5,
 					BorderSizePixel = 0,
-					Size = dim2(0, 0, 0, 12),
+					Size = dim2(0, 60, 0, 12),
 					Position = dim2(0.5, 0, 1, 8),
 					AnchorPoint = vec2(0.5, 0),
 					Visible = false,
@@ -2021,9 +2021,9 @@
 					BackgroundColor3 = themes.preset.accent,
 					BackgroundTransparency = 0.5,
 					BorderSizePixel = 0,
-					Size = dim2(0, 0, 0, 12),
+					Size = dim2(0, 60, 0, 12),
 					Position = dim2(0, 32, 0, 0),
-					AnchorPoint = vec2(0, 0),
+					AnchorPoint = vec2(1, 0),
 					Visible = false,
 					ZIndex = 100
 				})
@@ -2042,9 +2042,9 @@
 					BackgroundColor3 = themes.preset.accent,
 					BackgroundTransparency = 0.5,
 					BorderSizePixel = 0,
-					Size = dim2(0, 0, 0, 12),
+					Size = dim2(0, 60, 0, 12),
 					Position = dim2(1, -32, 0, 0),
-					AnchorPoint = vec2(1, 0),
+					AnchorPoint = vec2(0, 0),
 					Visible = false,
 					ZIndex = 100
 				})
