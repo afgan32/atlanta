@@ -1977,13 +1977,13 @@
 				zone_highlights.top = library:create("Frame", {
 					Parent = holder,
 					BackgroundColor3 = themes.preset.accent,
-					BackgroundTransparency = 0.5,
+					BackgroundTransparency = 0.3,
 					BorderSizePixel = 0,
 					Size = dim2(0, 60, 0, 12),
 					Position = dim2(0.5, 0, 0, -20),
 					AnchorPoint = vec2(0.5, 1),
-					Visible = false,
-					ZIndex = 100
+					Visible = true,
+					ZIndex = 200
 				})
 				library:apply_theme(zone_highlights.top, "accent", "BackgroundColor3")
 				local top_stroke = library:create("UIStroke", {
