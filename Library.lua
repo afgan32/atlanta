@@ -1965,7 +1965,7 @@
 					Position = dim2(0, 0, 0, 0),
 					AnchorPoint = vec2(0, 0),
 					Visible = false,
-					ZIndex = 0
+					ZIndex = 100
 				})
 				library:apply_theme(zone_highlights.top, "accent", "BackgroundColor3")
 				
@@ -1978,7 +1978,7 @@
 					Position = dim2(0, 0, 1, 0),
 					AnchorPoint = vec2(0, 1),
 					Visible = false,
-					ZIndex = 0
+					ZIndex = 100
 				})
 				library:apply_theme(zone_highlights.bottom, "accent", "BackgroundColor3")
 				
@@ -1991,7 +1991,7 @@
 					Position = dim2(0, 0, 0, 0),
 					AnchorPoint = vec2(0, 0),
 					Visible = false,
-					ZIndex = 0
+					ZIndex = 100
 				})
 				library:apply_theme(zone_highlights.left, "accent", "BackgroundColor3")
 				
@@ -2004,7 +2004,7 @@
 					Position = dim2(1, 0, 0, 0),
 					AnchorPoint = vec2(1, 0),
 					Visible = false,
-					ZIndex = 0
+					ZIndex = 100
 				})
 				library:apply_theme(zone_highlights.right, "accent", "BackgroundColor3")
 				
