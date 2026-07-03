@@ -2039,9 +2039,26 @@
 			
 			-- Create zone highlights once
 			if not zone_highlights.created then
+				-- Create a separate container for zones (sibling to holder, not child)
+				local zone_container = library:create("Frame", {
+					Parent = holder.Parent,
+					BackgroundTransparency = 1,
+					Size = holder.Size,
+					Position = holder.Position,
+					AnchorPoint = holder.AnchorPoint,
+					ZIndex = 100,
+					Active = false
+				})
+				
+				-- Update zone_container position to match holder
+				library:connection(run.RenderStepped, function()
+					zone_container.Position = holder.Position
+					zone_container.Size = holder.Size
+				end)
+				
 				-- Top zone
 				zone_highlights.top = library:create("Frame", {
-					Parent = holder,
+					Parent = zone_container,
 					BackgroundColor3 = themes.preset.accent,
 					BackgroundTransparency = 0.3,
 					BorderSizePixel = 0,
@@ -2063,7 +2080,7 @@
 				
 				-- Bottom zone
 				zone_highlights.bottom = library:create("Frame", {
-					Parent = holder,
+					Parent = zone_container,
 					BackgroundColor3 = themes.preset.accent,
 					BackgroundTransparency = 0.5,
 					BorderSizePixel = 0,
@@ -2085,7 +2102,7 @@
 				
 				-- Left zone - left of box
 				zone_highlights.left = library:create("Frame", {
-					Parent = holder,
+					Parent = zone_container,
 					BackgroundColor3 = themes.preset.accent,
 					BackgroundTransparency = 0.5,
 					BorderSizePixel = 0,
@@ -2107,7 +2124,7 @@
 				
 				-- Right zone
 				zone_highlights.right = library:create("Frame", {
-					Parent = holder,
+					Parent = zone_container,
 					BackgroundColor3 = themes.preset.accent,
 					BackgroundTransparency = 0.5,
 					BorderSizePixel = 0,
@@ -2128,16 +2145,6 @@
 				library:apply_theme(right_stroke, "glow", "Color")
 				
 				zone_highlights.created = true
-				
-				-- Keep zones at fixed positions (prevent them from moving with drag)
-				library:connection(run.RenderStepped, function()
-					if zone_highlights.top then
-						zone_highlights.top.Position = dim2(0.5, flags["esp_zone_top_x"] or 0, 0, flags["esp_zone_top_y"] or -5)
-						zone_highlights.bottom.Position = dim2(0.5, flags["esp_zone_bottom_x"] or 0, 1, flags["esp_zone_bottom_y"] or 5)
-						zone_highlights.left.Position = dim2(0, flags["esp_zone_left_x"] or -70, 0, flags["esp_zone_left_y"] or 2)
-						zone_highlights.right.Position = dim2(1, flags["esp_zone_right_x"] or 2, 0, flags["esp_zone_right_y"] or 2)
-					end
-				end)
 			end
 			
 			-- Update zone positions based on slider values
@@ -2404,7 +2411,7 @@
 			end
 
 			local swap_indicator = library:create("Frame", {
-				Parent = holder,
+				Parent = zone_highlights.top and zone_highlights.top.Parent or holder,
 				BackgroundColor3 = themes.preset.accent,
 				BackgroundTransparency = 0.9,
 				BorderSizePixel = 0,
