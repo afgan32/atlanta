@@ -2623,6 +2623,11 @@
 		function library:esp_preview(properties)
 			local cfg = {items = {}, rotation = 0; objects = {};}
 
+			if not lp.Character then
+				warn("Character not loaded yet")
+				return cfg
+			end
+			
 			lp.Character.Archivable = true
 			local character = lp.Character:Clone()
 			character.Animate:Destroy()
