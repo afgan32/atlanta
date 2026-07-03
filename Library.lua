@@ -2173,6 +2173,52 @@
 				local highlight = zone_highlights[zone]
 				if not highlight then return end
 				
+				-- Check if there are already elements in this zone
+				local zone_elements = get_zone_elements(zone)
+				local has_elements = #zone_elements > 0
+				
+				if elem_type == "healthbar" then
+					-- Healthbar zones: show as lines (filled)
+					highlight.BackgroundTransparency = 0.3
+					if zone == "top" or zone == "bottom" then
+						highlight.Size = dim2(1, 0, 0, 3)
+					else
+						highlight.Size = dim2(0, 4, 1, 0)
+					end
+				else
+					-- Text zones: show as rectangles
+					highlight.BackgroundTransparency = 0.9
+					
+					if has_elements then
+						-- If zone has elements, position under the last one
+						local last_elem = zone_elements[#zone_elements]
+						for _, child in pairs(holder:GetChildren()) do
+							if (child:IsA("Frame") or child:IsA("TextLabel")) and child.Name:find(last_elem.id) then
+								local child_pos = child.Position
+								local child_size = child.AbsoluteSize
+								
+								if zone == "top" or zone == "bottom" then
+									local spacing = 14
+									local new_y = child_pos.Y.Offset + (zone == "top" and -spacing or spacing + child_size.Y)
+									highlight.Size = dim2(0, 80, 0, 12)
+									highlight.Position = dim2(0.5, 0, child_pos.Y.Scale, new_y)
+									highlight.AnchorPoint = vec2(0.5, zone == "top" and 1 or 0)
+								else
+									local spacing = 15
+									local new_y = child_pos.Y.Offset + spacing + child_size.Y
+									highlight.Size = dim2(0, 80, 0, 12)
+									highlight.Position = dim2(child_pos.X.Scale, child_pos.X.Offset, 0, new_y)
+									highlight.AnchorPoint = vec2(0, 0)
+								end
+								return
+							end
+						end
+					end
+					
+					-- Default position (no elements in zone yet)
+					highlight.Size = dim2(0, 80, 0, 12)
+				end
+				
 				-- Use zone position offsets from sliders
 				if zone == "top" then
 					highlight.Position = dim2(0.5, flags["esp_zone_top_x"] or 0, 0, flags["esp_zone_top_y"] or -5)
@@ -2378,41 +2424,52 @@
 				end
 			end
 
-			local swap_indicator = library:create("ImageLabel", {
+			local swap_indicator = library:create("Frame", {
 				Parent = holder,
-				BackgroundTransparency = 1,
-				Image = "rbxassetid://77684377836328",
-				ImageColor3 = themes.preset.glow,
-				Size = dim2(0, 80, 0, 16),
+				BackgroundColor3 = themes.preset.accent,
+				BackgroundTransparency = 0.9,
+				BorderSizePixel = 0,
+				Size = dim2(0, 80, 0, 12),
 				Position = dim2(0, 0, 0, 0),
 				Visible = false,
 				ZIndex = 102
 			})
 			
+			library:create("UIStroke", {
+				Parent = swap_indicator,
+				Color = themes.preset.glow,
+				Thickness = 1,
+				Transparency = 0
+			})
+			
 			local function get_insert_position(zone, mouse_pos, holder_pos, holder_size)
 				local zone_elements = get_zone_elements(zone)
-				if #zone_elements == 0 then return 1 end
 				
-				local zones = get_zones()
-				local zone_data = zones[zone]
+				-- Filter out healthbar from insert position calculation
+				local text_elements = {}
+				for _, elem in ipairs(zone_elements) do
+					if elem.id ~= "healthbar" and elem.id ~= element_id then
+						table.insert(text_elements, elem)
+					end
+				end
 				
-				for i, elem_data in ipairs(zone_elements) do
-					if elem_data.id == element_id then continue end
-					
+				if #text_elements == 0 then return 1 end
+				
+				for i, elem_data in ipairs(text_elements) do
 					-- Find element position
 					for _, child in pairs(holder:GetChildren()) do
 						if (child:IsA("Frame") or child:IsA("TextLabel")) and child.Name:find(elem_data.id) then
 							local elem_pos = child.AbsolutePosition
 							local elem_size = child.AbsoluteSize
+							local elem_center_y = elem_pos.Y + elem_size.Y / 2
+							local elem_center_x = elem_pos.X + elem_size.X / 2
 							
 							if zone == "top" or zone == "bottom" then
-								local elem_y = elem_pos.Y + (zone == "top" and elem_size.Y or 0)
-								if mouse_pos.Y < elem_y then
+								if mouse_pos.Y < elem_center_y then
 									return i
 								end
 							else
-								local elem_x = elem_pos.X + (zone == "left" and elem_size.X or 0)
-								if mouse_pos.X < elem_x then
+								if mouse_pos.Y < elem_center_y then
 									return i
 								end
 							end
@@ -2421,7 +2478,7 @@
 					end
 				end
 				
-				return #zone_elements + 1
+				return #text_elements + 1
 			end
 			
 			local function show_swap_indicator(zone, insert_pos)
@@ -2431,19 +2488,49 @@
 				end
 				
 				local zone_elements = get_zone_elements(zone)
-				if insert_pos > #zone_elements then
+				
+				-- Filter text elements only
+				local text_elements = {}
+				for _, elem in ipairs(zone_elements) do
+					if elem.id ~= "healthbar" then
+						table.insert(text_elements, elem)
+					end
+				end
+				
+				if insert_pos > #text_elements then
+					-- Show after last element
+					if #text_elements > 0 then
+						local last_elem = text_elements[#text_elements]
+						for _, child in pairs(holder:GetChildren()) do
+							if (child:IsA("Frame") or child:IsA("TextLabel")) and child.Name:find(last_elem.id) then
+								local pos = child.Position
+								local size = child.AbsoluteSize
+								local spacing = (zone == "top" or zone == "bottom") and 14 or 15
+								
+								swap_indicator.Size = dim2(0, 80, 0, 12)
+								if zone == "top" or zone == "bottom" then
+									swap_indicator.Position = dim2(0.5, 0, pos.Y.Scale, pos.Y.Offset + (zone == "top" and -spacing or size.Y + spacing))
+									swap_indicator.AnchorPoint = vec2(0.5, zone == "top" and 1 or 0)
+								else
+									swap_indicator.Position = dim2(pos.X.Scale, pos.X.Offset, 0, pos.Y.Offset + size.Y + spacing)
+									swap_indicator.AnchorPoint = vec2(0, 0)
+								end
+								swap_indicator.Visible = true
+								return
+							end
+						end
+					end
 					swap_indicator.Visible = false
 					return
 				end
 				
-				local target_elem = zone_elements[insert_pos]
+				-- Show before target element
+				local target_elem = text_elements[insert_pos]
 				for _, child in pairs(holder:GetChildren()) do
 					if (child:IsA("Frame") or child:IsA("TextLabel")) and child.Name:find(target_elem.id) then
 						local pos = child.Position
-						local size = child.AbsoluteSize
 						
-						-- Show box around the target element
-						swap_indicator.Size = dim2(0, size.X, 0, size.Y)
+						swap_indicator.Size = dim2(0, 80, 0, 12)
 						swap_indicator.Position = pos
 						swap_indicator.AnchorPoint = child.AnchorPoint
 						swap_indicator.Visible = true
