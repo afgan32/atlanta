@@ -2566,7 +2566,12 @@
 			drag_button.MouseButton1Down:Connect(function()
 				dragging = true
 				start_pos = vec2(mouse.X, mouse.Y)
-				element.AnchorPoint = vec2(0.5, 0.5)
+				-- Make element semi-transparent during drag for visual feedback
+				if element:IsA("TextLabel") then
+					element.TextTransparency = 0.5
+				else
+					element.BackgroundTransparency = math.min(1, element.BackgroundTransparency + 0.5)
+				end
 			end)
 
 			library:connection(uis.InputEnded, function(input)
@@ -2574,6 +2579,13 @@
 					dragging = false
 					hide_zone_highlights()
 					swap_indicator.Visible = false
+					
+					-- Restore element transparency
+					if element:IsA("TextLabel") then
+						element.TextTransparency = 0
+					else
+						element.BackgroundTransparency = math.max(0, element.BackgroundTransparency - 0.5)
+					end
 					
 					-- Check if free drag mode is enabled
 					if flags["esp_debug_free_drag"] then
@@ -2597,10 +2609,8 @@
 					local holder_size = holder.AbsoluteSize
 					local mouse_pos = vec2(mouse.X, mouse.Y)
 					
-					local new_x = mouse.X - holder_pos.X
-					local new_y = mouse.Y - holder_pos.Y
-					
-					element.Position = dim2(0, new_x, 0, new_y)
+					-- Don't move element position during drag to prevent layout issues
+					-- element.Position = dim2(0, new_x, 0, new_y)
 					
 					-- Update zone highlight
 					local zone = get_closest_zone(mouse_pos, holder_pos, holder_size)
