@@ -2049,7 +2049,8 @@
 					Position = dim2(0.5, flags["esp_zone_top_x"] or 0, 0, flags["esp_zone_top_y"] or 9),
 					AnchorPoint = vec2(0.5, 1),
 					Visible = false,
-					ZIndex = 200
+					ZIndex = 200,
+					Active = false
 				})
 				library:apply_theme(zone_highlights.top, "accent", "BackgroundColor3")
 				local top_stroke = library:create("UIStroke", {
@@ -2070,7 +2071,8 @@
 					Position = dim2(0.5, flags["esp_zone_bottom_x"] or 0, 1, flags["esp_zone_bottom_y"] or -20),
 					AnchorPoint = vec2(0.5, 0),
 					Visible = false,
-					ZIndex = 100
+					ZIndex = 100,
+					Active = false
 				})
 				library:apply_theme(zone_highlights.bottom, "accent", "BackgroundColor3")
 				local bottom_stroke = library:create("UIStroke", {
@@ -2091,7 +2093,8 @@
 					Position = dim2(0, flags["esp_zone_left_x"] or -60, 0, flags["esp_zone_left_y"] or 0),
 					AnchorPoint = vec2(0, 0),
 					Visible = false,
-					ZIndex = 100
+					ZIndex = 100,
+					Active = false
 				})
 				library:apply_theme(zone_highlights.left, "accent", "BackgroundColor3")
 				local left_stroke = library:create("UIStroke", {
@@ -2112,7 +2115,8 @@
 					Position = dim2(1, flags["esp_zone_right_x"] or 1, 0, flags["esp_zone_right_y"] or 1),
 					AnchorPoint = vec2(0, 0),
 					Visible = false,
-					ZIndex = 100
+					ZIndex = 100,
+					Active = false
 				})
 				library:apply_theme(zone_highlights.right, "accent", "BackgroundColor3")
 				local right_stroke = library:create("UIStroke", {
