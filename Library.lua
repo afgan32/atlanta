@@ -2433,7 +2433,7 @@
 			local function get_insert_position(zone, mouse_pos, holder_pos, holder_size)
 				local zone_elements = get_zone_elements(zone)
 				
-				-- Filter out healthbar from insert position calculation
+				-- Filter out healthbar and current dragging element
 				local text_elements = {}
 				for _, elem in ipairs(zone_elements) do
 					if elem.id ~= "healthbar" and elem.id ~= element_id then
@@ -2450,22 +2450,18 @@
 							local elem_pos = child.AbsolutePosition
 							local elem_size = child.AbsoluteSize
 							local elem_center_y = elem_pos.Y + elem_size.Y / 2
-							local elem_center_x = elem_pos.X + elem_size.X / 2
 							
-							if zone == "top" or zone == "bottom" then
-								if mouse_pos.Y < elem_center_y then
-									return i
-								end
-							else
-								if mouse_pos.Y < elem_center_y then
-									return i
-								end
+							-- If mouse is above center of element, insert before it
+							-- If mouse is below center, continue to next element (or insert after last)
+							if mouse_pos.Y < elem_center_y then
+								return i
 							end
 							break
 						end
 					end
 				end
 				
+				-- If we got here, mouse is below all elements - insert at end
 				return #text_elements + 1
 			end
 			
