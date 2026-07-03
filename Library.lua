@@ -1826,6 +1826,16 @@
 				debug_section:slider({name = "Avatar Y Offset", flag = "esp_avatar_y_offset", min = 0, max = 250, default = 24, interval = 1})
 				debug_section:slider({name = "Character Y Offset", flag = "esp_character_y_offset", min = -5, max = 5, default = -0.3, interval = 0.1})
 				
+				-- Zone highlight position sliders
+				debug_section:slider({name = "Top Zone X", flag = "esp_zone_top_x", min = -200, max = 200, default = 0, interval = 1})
+				debug_section:slider({name = "Top Zone Y", flag = "esp_zone_top_y", min = -200, max = 200, default = 9, interval = 1})
+				debug_section:slider({name = "Bottom Zone X", flag = "esp_zone_bottom_x", min = -200, max = 200, default = 0, interval = 1})
+				debug_section:slider({name = "Bottom Zone Y", flag = "esp_zone_bottom_y", min = -200, max = 200, default = -20, interval = 1})
+				debug_section:slider({name = "Left Zone X", flag = "esp_zone_left_x", min = -200, max = 200, default = 32, interval = 1})
+				debug_section:slider({name = "Left Zone Y", flag = "esp_zone_left_y", min = -200, max = 200, default = 0, interval = 1})
+				debug_section:slider({name = "Right Zone X", flag = "esp_zone_right_x", min = -200, max = 200, default = 1, interval = 1})
+				debug_section:slider({name = "Right Zone Y", flag = "esp_zone_right_y", min = -200, max = 200, default = 1, interval = 1})
+				
 				-- Debug controls
 				debug_section:toggle({name = "Free Drag (No Snap)", flag = "esp_debug_free_drag", default = false})
 				
@@ -2089,13 +2099,20 @@
 				
 				zone_highlights.created = true
 				
-				-- Make zone highlights draggable and resizable immediately
+				-- Make zone highlights draggable only (no resize)
 				for name, highlight in pairs(zone_highlights) do
 					if name ~= "created" then
 						library:draggify(highlight)
-						library:make_resizable(highlight)
 					end
 				end
+			end
+			
+			-- Update zone positions based on slider values
+			if zone_highlights.created then
+				zone_highlights.top.Position = dim2(0.5, flags["esp_zone_top_x"] or 0, 0, flags["esp_zone_top_y"] or 9)
+				zone_highlights.bottom.Position = dim2(0.5, flags["esp_zone_bottom_x"] or 0, 1, flags["esp_zone_bottom_y"] or -20)
+				zone_highlights.left.Position = dim2(0, flags["esp_zone_left_x"] or 32, 0, flags["esp_zone_left_y"] or 0)
+				zone_highlights.right.Position = dim2(1, flags["esp_zone_right_x"] or 1, 0, flags["esp_zone_right_y"] or 1)
 			end
 			
 			local default_offsets = {
