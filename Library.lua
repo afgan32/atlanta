@@ -2477,29 +2477,35 @@
 				
 				local zone_elements = get_zone_elements(zone)
 				
-				-- Filter text elements only
+				-- Filter text elements only (exclude healthbar and current dragging element)
 				local text_elements = {}
 				for _, elem in ipairs(zone_elements) do
-					if elem.id ~= "healthbar" then
+					if elem.id ~= "healthbar" and elem.id ~= element_id then
 						table.insert(text_elements, elem)
 					end
 				end
 				
-				if insert_pos > #text_elements then
-					-- Show after last element
+				local zones = get_zones()
+				local zone_data = zones[zone]
+				
+				if #text_elements == 0 or insert_pos > #text_elements then
+					-- Show at first position in empty zone OR after last element
+					swap_indicator.Size = dim2(0, 80, 0, 12)
+					
 					if #text_elements > 0 then
+						-- After last element
 						local last_elem = text_elements[#text_elements]
 						for _, child in pairs(holder:GetChildren()) do
 							if (child:IsA("Frame") or child:IsA("TextLabel")) and child.Name:find(last_elem.id) then
 								local pos = child.Position
 								local size = child.AbsoluteSize
-								local spacing = (zone == "top" or zone == "bottom") and 14 or 15
+								local spacing = zone_data.spacing
 								
-								swap_indicator.Size = dim2(0, 80, 0, 12)
 								if zone == "top" or zone == "bottom" then
 									swap_indicator.Position = dim2(0.5, 0, pos.Y.Scale, pos.Y.Offset + (zone == "top" and -spacing or size.Y + spacing))
 									swap_indicator.AnchorPoint = vec2(0.5, zone == "top" and 1 or 0)
 								else
+									local y_offset = zone_data.y_offset or 0
 									swap_indicator.Position = dim2(pos.X.Scale, pos.X.Offset, 0, pos.Y.Offset + size.Y + spacing)
 									swap_indicator.AnchorPoint = vec2(0, 0)
 								end
@@ -2507,12 +2513,32 @@
 								return
 							end
 						end
+					else
+						-- First position in empty zone - use zone default position
+						if zone == "top" then
+							swap_indicator.Position = dim2(0.5, 0, 0, zone_data.offset)
+							swap_indicator.AnchorPoint = vec2(0.5, 1)
+						elseif zone == "bottom" then
+							swap_indicator.Position = dim2(0.5, 0, 1, zone_data.offset)
+							swap_indicator.AnchorPoint = vec2(0.5, 0)
+						elseif zone == "left" then
+							local y_offset = zone_data.y_offset or 0
+							swap_indicator.Position = dim2(0, zone_data.offset, 0, y_offset)
+							swap_indicator.AnchorPoint = vec2(0, 0)
+						elseif zone == "right" then
+							local y_offset = zone_data.y_offset or 0
+							swap_indicator.Position = dim2(1, zone_data.offset, 0, y_offset)
+							swap_indicator.AnchorPoint = vec2(0, 0)
+						end
+						swap_indicator.Visible = true
+						return
 					end
+					
 					swap_indicator.Visible = false
 					return
 				end
 				
-				-- Show before target element
+				-- Show before target element at insert_pos
 				local target_elem = text_elements[insert_pos]
 				for _, child in pairs(holder:GetChildren()) do
 					if (child:IsA("Frame") or child:IsA("TextLabel")) and child.Name:find(target_elem.id) then
