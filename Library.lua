@@ -2170,10 +2170,6 @@
 				local highlight = zone_highlights[zone]
 				if not highlight then return end
 				
-				-- Check if there are already elements in this zone
-				local zone_elements = get_zone_elements(zone)
-				local has_elements = #zone_elements > 0
-				
 				if elem_type == "healthbar" then
 					-- Healthbar zones: show as lines (filled)
 					highlight.BackgroundTransparency = 0.3
@@ -2185,46 +2181,22 @@
 				else
 					-- Text zones: show as rectangles
 					highlight.BackgroundTransparency = 0.9
-					
-					if has_elements then
-						-- If zone has elements, position under the last one
-						local last_elem = zone_elements[#zone_elements]
-						for _, child in pairs(holder:GetChildren()) do
-							if (child:IsA("Frame") or child:IsA("TextLabel")) and child.Name:find(last_elem.id) then
-								local child_pos = child.Position
-								local child_size = child.AbsoluteSize
-								
-								if zone == "top" or zone == "bottom" then
-									local spacing = 14
-									local new_y = child_pos.Y.Offset + (zone == "top" and -spacing or spacing + child_size.Y)
-									highlight.Size = dim2(0, 80, 0, 12)
-									highlight.Position = dim2(0.5, 0, child_pos.Y.Scale, new_y)
-									highlight.AnchorPoint = vec2(0.5, zone == "top" and 1 or 0)
-								else
-									local spacing = 15
-									local new_y = child_pos.Y.Offset + spacing + child_size.Y
-									highlight.Size = dim2(0, 80, 0, 12)
-									highlight.Position = dim2(child_pos.X.Scale, child_pos.X.Offset, 0, new_y)
-									highlight.AnchorPoint = vec2(0, 0)
-								end
-								return
-							end
-						end
-					end
-					
-					-- Default position (no elements in zone yet)
 					highlight.Size = dim2(0, 80, 0, 12)
 				end
 				
-				-- Use zone position offsets from sliders
+				-- Always use fixed zone position offsets from sliders (don't move with elements)
 				if zone == "top" then
 					highlight.Position = dim2(0.5, flags["esp_zone_top_x"] or 0, 0, flags["esp_zone_top_y"] or -5)
+					highlight.AnchorPoint = vec2(0.5, 1)
 				elseif zone == "bottom" then
 					highlight.Position = dim2(0.5, flags["esp_zone_bottom_x"] or 0, 1, flags["esp_zone_bottom_y"] or 5)
+					highlight.AnchorPoint = vec2(0.5, 0)
 				elseif zone == "left" then
 					highlight.Position = dim2(0, flags["esp_zone_left_x"] or -70, 0, flags["esp_zone_left_y"] or 2)
+					highlight.AnchorPoint = vec2(0, 0)
 				elseif zone == "right" then
 					highlight.Position = dim2(1, flags["esp_zone_right_x"] or 2, 0, flags["esp_zone_right_y"] or 2)
+					highlight.AnchorPoint = vec2(0, 0)
 				end
 			end
 
