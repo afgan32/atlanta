@@ -2124,13 +2124,6 @@
 				library:apply_theme(right_stroke, "glow", "Color")
 				
 				zone_highlights.created = true
-				
-				-- Make zone highlights draggable only (no resize)
-				for name, highlight in pairs(zone_highlights) do
-					if name ~= "created" then
-						library:draggify(highlight)
-					end
-				end
 			end
 			
 			-- Update zone positions based on slider values
