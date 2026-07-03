@@ -2279,20 +2279,51 @@
 				local zones = get_zones()
 				local zone_data = zones[zone]
 				
-				-- Check if healthbar is in this zone
-				local has_healthbar = false
-				local healthbar_height = 0
+				-- Separate healthbar from text elements
+				local text_elements = {}
+				local healthbar_elem = nil
+				
 				for _, elem_data in ipairs(elements) do
 					if elem_data.id == "healthbar" then
-						has_healthbar = true
-						if zone == "left" or zone == "right" then
-							healthbar_height = 190 -- Full height for vertical healthbar
-						end
-						break
+						healthbar_elem = elem_data
+					else
+						table.insert(text_elements, elem_data)
 					end
 				end
 				
-				for i, elem_data in ipairs(elements) do
+				-- Position healthbar separately (always at 0 for left/right)
+				if healthbar_elem then
+					for _, child in pairs(holder:GetChildren()) do
+						if (child:IsA("Frame") or child:IsA("TextLabel")) and child.Name:find("healthbar") then
+							if zone == "top" then
+								child.AnchorPoint = vec2(0.5, 0)
+								esp_element_orientations["healthbar"] = "horizontal"
+								child.Size = dim2(1, 0, 0, 3)
+								child.Position = dim2(0.5, 0, 0, -3)
+							elseif zone == "bottom" then
+								child.AnchorPoint = vec2(0.5, 1)
+								esp_element_orientations["healthbar"] = "horizontal"
+								child.Size = dim2(1, 0, 0, 3)
+								child.Position = dim2(0.5, 0, 1, 3)
+							elseif zone == "left" then
+								child.AnchorPoint = vec2(1, 0)
+								esp_element_orientations["healthbar"] = "vertical"
+								child.Size = dim2(0, 4, 1, 0)
+								child.Position = dim2(0, -3, 0, 0)
+							elseif zone == "right" then
+								child.AnchorPoint = vec2(0, 0)
+								esp_element_orientations["healthbar"] = "vertical"
+								child.Size = dim2(0, 4, 1, 0)
+								child.Position = dim2(1, 3, 0, 0)
+							end
+							break
+						end
+					end
+				end
+				
+				-- Position text elements (ignore healthbar in stack calculation)
+				local y_offset = zone_data.y_offset or 0
+				for i, elem_data in ipairs(text_elements) do
 					local elem_id = elem_data.id
 					local elem_obj = nil
 					
@@ -2306,22 +2337,10 @@
 					
 					if elem_obj then
 						local scale_pos = default_offsets[elem_id] or 0.5
-						local is_healthbar = elem_id == "healthbar"
 						
-						-- Calculate stack offset
-						local text_index = i
-						if has_healthbar and not is_healthbar and (zone == "left" or zone == "right") then
-							text_index = i - 1 -- Adjust index for text elements after healthbar
-						end
-						
-						local stack_offset = (text_index - 1) * zone_data.spacing * zone_data.dir
-						if has_healthbar and not is_healthbar and (zone == "left" or zone == "right") then
-							-- Start text after healthbar
-							stack_offset = healthbar_height + (text_index * zone_data.spacing * zone_data.dir)
-						end
-						
+						-- Calculate stack offset for text elements only
+						local stack_offset = (i - 1) * zone_data.spacing * zone_data.dir
 						local final_offset = zone_data.offset + stack_offset
-						local y_offset = zone_data.y_offset or 0
 						
 						-- Correct clamping
 						if zone == "top" then
@@ -2341,70 +2360,33 @@
 						elem_obj.AnchorPoint = zone_data.anchor
 						
 						if zone == "top" then
-							if is_healthbar then
-								esp_element_orientations[elem_id] = "horizontal"
-								elem_obj.Size = dim2(1, 0, 0, 3)
-								elem_obj.AnchorPoint = vec2(0.5, 0)
-								elem_obj.Position = dim2(0.5, 0, 0, -3)
-							else
-								elem_obj.Position = dim2(scale_pos, 0, 0, final_offset)
-							end
+							elem_obj.Position = dim2(scale_pos, 0, 0, final_offset)
 						elseif zone == "bottom" then
-							if is_healthbar then
-								esp_element_orientations[elem_id] = "horizontal"
-								elem_obj.Size = dim2(1, 0, 0, 3)
-								elem_obj.AnchorPoint = vec2(0.5, 1)
-								elem_obj.Position = dim2(0.5, 0, 1, 3)
-							else
-								elem_obj.Position = dim2(scale_pos, 0, 1, final_offset)
-							end
+							elem_obj.Position = dim2(scale_pos, 0, 1, final_offset)
 						elseif zone == "left" then
-							if is_healthbar then
-								elem_obj.AnchorPoint = vec2(1, 0)
-								esp_element_orientations[elem_id] = "vertical"
-								elem_obj.Size = dim2(0, 4, 1, 0)
-								-- Healthbar Y always 0 in vertical mode
-								elem_obj.Position = dim2(0, -3, 0, 0)
-							else
-								-- For left: text aligned to left edge (AnchorPoint 0,0)
-								elem_obj.AnchorPoint = vec2(0, 0)
-								local x_offset = zone_data.offset
-								elem_obj.Position = dim2(0, x_offset, 0, y_offset + stack_offset)
-							end
+							-- For left: text aligned to left edge (AnchorPoint 0,0)
+							elem_obj.AnchorPoint = vec2(0, 0)
+							local x_offset = zone_data.offset
+							elem_obj.Position = dim2(0, x_offset, 0, y_offset + stack_offset)
 						elseif zone == "right" then
-							if is_healthbar then
-								elem_obj.AnchorPoint = vec2(0, 0)
-								esp_element_orientations[elem_id] = "vertical"
-								elem_obj.Size = dim2(0, 4, 1, 0)
-								-- Healthbar Y always 0 in vertical mode
-								elem_obj.Position = dim2(1, 3, 0, 0)
-							else
-								-- For right: text aligned to left edge (AnchorPoint 0,0)
-								elem_obj.AnchorPoint = vec2(0, 0)
-								local x_offset = zone_data.offset
-								elem_obj.Position = dim2(1, x_offset, 0, y_offset + stack_offset)
-							end
+							-- For right: text aligned to left edge (AnchorPoint 0,0)
+							elem_obj.AnchorPoint = vec2(0, 0)
+							local x_offset = zone_data.offset
+							elem_obj.Position = dim2(1, x_offset, 0, y_offset + stack_offset)
 						end
 					end
 				end
 			end
 
-			local swap_indicator = library:create("Frame", {
+			local swap_indicator = library:create("ImageLabel", {
 				Parent = holder,
-				BackgroundColor3 = rgb(255, 255, 255),
 				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				Size = dim2(0, 100, 0, 20),
+				Image = "rbxassetid://77684377836328",
+				ImageColor3 = themes.preset.glow,
+				Size = dim2(0, 80, 0, 16),
 				Position = dim2(0, 0, 0, 0),
 				Visible = false,
-				ZIndex = 101
-			})
-			
-			library:create("UIStroke", {
-				Parent = swap_indicator,
-				Color = themes.preset.accent,
-				Thickness = 2,
-				Transparency = 0
+				ZIndex = 102
 			})
 			
 			local function get_insert_position(zone, mouse_pos, holder_pos, holder_size)
@@ -2547,15 +2529,17 @@
 					
 					-- Update zone highlight
 					local zone = get_closest_zone(mouse_pos, holder_pos, holder_size)
-					show_zone_highlight(zone)
 					
 					-- Show swap indicator if in same zone
 					local current_zone = esp_element_zones[element_id]
 					if zone == current_zone then
 						local insert_pos = get_insert_position(zone, mouse_pos, holder_pos, holder_size)
 						show_swap_indicator(zone, insert_pos)
+						-- Hide zone highlight when swapping in same zone
+						hide_zone_highlights()
 					else
 						swap_indicator.Visible = false
+						show_zone_highlight(zone)
 					end
 				end
 			end)
