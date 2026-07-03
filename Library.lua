@@ -1819,9 +1819,9 @@
 				local debug_section = column:section({name = "Debug Offsets"})
 				debug_section:slider({name = "Top Offset", flag = "esp_top_offset", min = -20, max = 20, default = -15, interval = 1})
 				debug_section:slider({name = "Bottom Offset", flag = "esp_bottom_offset", min = -20, max = 20, default = 15, interval = 1})
-				debug_section:slider({name = "Left Offset", flag = "esp_left_offset", min = -200, max = 200, default = 32, interval = 1})
+				debug_section:slider({name = "Left Offset", flag = "esp_left_offset", min = -200, max = 200, default = -108, interval = 1})
 				debug_section:slider({name = "Right Offset", flag = "esp_right_offset", min = -200, max = 200, default = -32, interval = 1})
-				debug_section:slider({name = "Left Y Offset", flag = "esp_left_y_offset", min = -50, max = 50, default = 0, interval = 1})
+				debug_section:slider({name = "Left Y Offset", flag = "esp_left_y_offset", min = -200, max = 200, default = 0, interval = 1})
 				debug_section:slider({name = "Right Y Offset", flag = "esp_right_y_offset", min = -50, max = 50, default = 0, interval = 1})
 				debug_section:slider({name = "Avatar Y Offset", flag = "esp_avatar_y_offset", min = 0, max = 250, default = 24, interval = 1})
 				debug_section:slider({name = "Character Y Offset", flag = "esp_character_y_offset", min = -5, max = 5, default = -0.3, interval = 0.1})
@@ -2152,7 +2152,7 @@
 				return {
 					top = {offset = flags["esp_top_offset"] or -15, anchor = vec2(0.5, 0), axis = "x", spacing = flags["esp_tb_spacing"] or 14, dir = -1, y_offset = 0},
 					bottom = {offset = flags["esp_bottom_offset"] or 15, anchor = vec2(0.5, 1), axis = "x", spacing = flags["esp_tb_spacing"] or 14, dir = 1, y_offset = 0},
-					left = {offset = flags["esp_left_offset"] or 32, anchor = vec2(0, 0), axis = "x", spacing = 15, dir = 1, y_offset = flags["esp_left_y_offset"] or 0},
+					left = {offset = flags["esp_left_offset"] or -108, anchor = vec2(0, 0), axis = "x", spacing = 15, dir = 1, y_offset = flags["esp_left_y_offset"] or 0},
 					right = {offset = flags["esp_right_offset"] or -32, anchor = vec2(1, 0), axis = "x", spacing = 15, dir = 1, y_offset = flags["esp_right_y_offset"] or 0}
 				}
 			end
@@ -2363,7 +2363,8 @@
 								elem_obj.AnchorPoint = vec2(1, 0)
 								esp_element_orientations[elem_id] = "vertical"
 								elem_obj.Size = dim2(0, 4, 1, 0)
-								elem_obj.Position = dim2(0, -3, 0, y_offset)
+								-- Healthbar Y always 0 in vertical mode
+								elem_obj.Position = dim2(0, -3, 0, 0)
 							else
 								-- For left: text aligned to left edge (AnchorPoint 0,0)
 								elem_obj.AnchorPoint = vec2(0, 0)
@@ -2375,7 +2376,8 @@
 								elem_obj.AnchorPoint = vec2(0, 0)
 								esp_element_orientations[elem_id] = "vertical"
 								elem_obj.Size = dim2(0, 4, 1, 0)
-								elem_obj.Position = dim2(1, 3, 0, y_offset)
+								-- Healthbar Y always 0 in vertical mode
+								elem_obj.Position = dim2(1, 3, 0, 0)
 							else
 								-- For right: text aligned to left edge (AnchorPoint 0,0)
 								elem_obj.AnchorPoint = vec2(0, 0)
