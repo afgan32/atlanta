@@ -2039,14 +2039,14 @@
 			
 			-- Create zone highlights once
 			if not zone_highlights.created then
-				-- Top zone (using current offset value 9)
+				-- Top zone
 				zone_highlights.top = library:create("Frame", {
 					Parent = holder,
 					BackgroundColor3 = themes.preset.accent,
 					BackgroundTransparency = 0.3,
 					BorderSizePixel = 0,
 					Size = dim2(0, 60, 0, 12),
-					Position = dim2(0.5, 0, 0, 9),
+					Position = dim2(0.5, flags["esp_zone_top_x"] or 0, 0, flags["esp_zone_top_y"] or 9),
 					AnchorPoint = vec2(0.5, 1),
 					Visible = false,
 					ZIndex = 200
@@ -2060,14 +2060,14 @@
 				})
 				library:apply_theme(top_stroke, "glow", "Color")
 				
-				-- Bottom zone (using current offset value -20)
+				-- Bottom zone
 				zone_highlights.bottom = library:create("Frame", {
 					Parent = holder,
 					BackgroundColor3 = themes.preset.accent,
 					BackgroundTransparency = 0.5,
 					BorderSizePixel = 0,
 					Size = dim2(0, 60, 0, 12),
-					Position = dim2(0.5, 0, 1, -20),
+					Position = dim2(0.5, flags["esp_zone_bottom_x"] or 0, 1, flags["esp_zone_bottom_y"] or -20),
 					AnchorPoint = vec2(0.5, 0),
 					Visible = false,
 					ZIndex = 100
@@ -2081,14 +2081,14 @@
 				})
 				library:apply_theme(bottom_stroke, "glow", "Color")
 				
-				-- Left zone (using current offset value -60, Y offset 0) - left of box
+				-- Left zone - left of box
 				zone_highlights.left = library:create("Frame", {
 					Parent = holder,
 					BackgroundColor3 = themes.preset.accent,
 					BackgroundTransparency = 0.5,
 					BorderSizePixel = 0,
 					Size = dim2(0, 60, 0, 12),
-					Position = dim2(0, -60, 0, 0),
+					Position = dim2(0, flags["esp_zone_left_x"] or -60, 0, flags["esp_zone_left_y"] or 0),
 					AnchorPoint = vec2(0, 0),
 					Visible = false,
 					ZIndex = 100
@@ -2102,14 +2102,14 @@
 				})
 				library:apply_theme(left_stroke, "glow", "Color")
 				
-				-- Right zone (using current offset value 1, Y offset 1)
+				-- Right zone
 				zone_highlights.right = library:create("Frame", {
 					Parent = holder,
 					BackgroundColor3 = themes.preset.accent,
 					BackgroundTransparency = 0.5,
 					BorderSizePixel = 0,
 					Size = dim2(0, 60, 0, 12),
-					Position = dim2(1, 1, 0, 1),
+					Position = dim2(1, flags["esp_zone_right_x"] or 1, 0, flags["esp_zone_right_y"] or 1),
 					AnchorPoint = vec2(0, 0),
 					Visible = false,
 					ZIndex = 100
