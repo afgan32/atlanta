@@ -1821,7 +1821,7 @@
 				debug_section:slider({name = "Bottom Offset", flag = "esp_bottom_offset", min = -20, max = 20, default = 15, interval = 1})
 				debug_section:slider({name = "Left Offset", flag = "esp_left_offset", min = -200, max = 200, default = -108, interval = 1})
 				debug_section:slider({name = "Right Offset", flag = "esp_right_offset", min = -200, max = 200, default = -32, interval = 1})
-				debug_section:slider({name = "Left Y Offset", flag = "esp_left_y_offset", min = -200, max = 200, default = 0, interval = 1})
+				debug_section:slider({name = "Left Y Offset", flag = "esp_left_y_offset", min = -300, max = 300, default = 0, interval = 1})
 				debug_section:slider({name = "Right Y Offset", flag = "esp_right_y_offset", min = -50, max = 50, default = 0, interval = 1})
 				debug_section:slider({name = "Avatar Y Offset", flag = "esp_avatar_y_offset", min = 0, max = 250, default = 24, interval = 1})
 				debug_section:slider({name = "Character Y Offset", flag = "esp_character_y_offset", min = -5, max = 5, default = -0.3, interval = 0.1})
@@ -2391,15 +2391,22 @@
 
 			local swap_indicator = library:create("Frame", {
 				Parent = holder,
-				BackgroundColor3 = themes.preset.accent,
-				BackgroundTransparency = 0.7,
+				BackgroundColor3 = rgb(255, 255, 255),
+				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
-				Size = dim2(0, 2, 0, 20),
+				Size = dim2(0, 100, 0, 20),
 				Position = dim2(0, 0, 0, 0),
 				Visible = false,
 				ZIndex = 101
 			})
-			library:apply_theme(swap_indicator, "accent", "BackgroundColor3")
+			
+			local swap_stroke = library:create("UIStroke", {
+				Parent = swap_indicator,
+				Color = themes.preset.accent,
+				Thickness = 2,
+				Transparency = 0
+			})
+			library:apply_theme(swap_stroke, "accent", "Color")
 			
 			local function get_insert_position(zone, mouse_pos, holder_pos, holder_size)
 				local zone_elements = get_zone_elements(zone)
@@ -2454,14 +2461,10 @@
 						local pos = child.Position
 						local size = child.AbsoluteSize
 						
-						if zone == "top" or zone == "bottom" then
-							swap_indicator.Size = dim2(1, 0, 0, 2)
-							swap_indicator.Position = dim2(pos.X.Scale, pos.X.Offset, pos.Y.Scale, pos.Y.Offset - 1)
-						else
-							swap_indicator.Size = dim2(0, 2, 1, 0)
-							swap_indicator.Position = dim2(pos.X.Scale, pos.X.Offset - 1, pos.Y.Scale, pos.Y.Offset)
-						end
-						
+						-- Show box around the target element
+						swap_indicator.Size = dim2(0, size.X, 0, size.Y)
+						swap_indicator.Position = pos
+						swap_indicator.AnchorPoint = child.AnchorPoint
 						swap_indicator.Visible = true
 						return
 					end
