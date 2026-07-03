@@ -2039,14 +2039,16 @@
 			
 			-- Create zone highlights once
 			if not zone_highlights.created then
+				local zone_parent = holder.Parent -- Use viewport as parent instead of holder
+				
 				-- Top zone
 				zone_highlights.top = library:create("Frame", {
-					Parent = holder,
+					Parent = zone_parent,
 					BackgroundColor3 = themes.preset.accent,
 					BackgroundTransparency = 0.3,
 					BorderSizePixel = 0,
 					Size = dim2(0, 60, 0, 12),
-					Position = dim2(0.5, flags["esp_zone_top_x"] or 0, 0, flags["esp_zone_top_y"] or 9),
+					Position = dim2(0.5, flags["esp_zone_top_x"] or 0, 0, flags["esp_zone_top_y"] or -5),
 					AnchorPoint = vec2(0.5, 1),
 					Visible = false,
 					ZIndex = 200,
@@ -2063,7 +2065,7 @@
 				
 				-- Bottom zone
 				zone_highlights.bottom = library:create("Frame", {
-					Parent = holder,
+					Parent = zone_parent,
 					BackgroundColor3 = themes.preset.accent,
 					BackgroundTransparency = 0.5,
 					BorderSizePixel = 0,
@@ -2085,7 +2087,7 @@
 				
 				-- Left zone - left of box
 				zone_highlights.left = library:create("Frame", {
-					Parent = holder,
+					Parent = zone_parent,
 					BackgroundColor3 = themes.preset.accent,
 					BackgroundTransparency = 0.5,
 					BorderSizePixel = 0,
@@ -2107,7 +2109,7 @@
 				
 				-- Right zone
 				zone_highlights.right = library:create("Frame", {
-					Parent = holder,
+					Parent = zone_parent,
 					BackgroundColor3 = themes.preset.accent,
 					BackgroundTransparency = 0.5,
 					BorderSizePixel = 0,
@@ -2394,7 +2396,7 @@
 			end
 
 			local swap_indicator = library:create("Frame", {
-				Parent = holder,
+				Parent = holder.Parent,
 				BackgroundColor3 = themes.preset.accent,
 				BackgroundTransparency = 0.9,
 				BorderSizePixel = 0,
