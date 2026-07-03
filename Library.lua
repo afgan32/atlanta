@@ -2040,20 +2040,22 @@
 			-- Create zone highlights once
 			if not zone_highlights.created then
 				-- Create a separate container for zones (sibling to holder, not child)
+				-- Use fixed position matching holder's initial position
 				local zone_container = library:create("Frame", {
 					Parent = holder.Parent,
 					BackgroundTransparency = 1,
-					Size = holder.Size,
-					Position = holder.Position,
-					AnchorPoint = holder.AnchorPoint,
+					Size = dim2(0, 135, 0, 190),
+					Position = dim2(0.5, 0, 0.5, flags["esp_avatar_y_offset"] or 24),
+					AnchorPoint = vec2(0.5, 0.5),
 					ZIndex = 100,
 					Active = false
 				})
 				
-				-- Update zone_container position to match holder
+				-- Update zone_container Y position when avatar offset changes
 				library:connection(run.RenderStepped, function()
-					zone_container.Position = holder.Position
-					zone_container.Size = holder.Size
+					if flags["esp_avatar_y_offset"] then
+						zone_container.Position = dim2(0.5, 0, 0.5, flags["esp_avatar_y_offset"])
+					end
 				end)
 				
 				-- Top zone
