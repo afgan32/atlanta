@@ -1839,7 +1839,7 @@
 				debug_section:slider({name = "Bottom Zone Y", flag = "esp_zone_bottom_y", min = -200, max = 200, default = 5, interval = 1, callback = function(val)
 					library:update_zone_positions()
 				end})
-				debug_section:slider({name = "Left Zone X", flag = "esp_zone_left_x", min = -200, max = 200, default = -89, interval = 1, callback = function(val)
+				debug_section:slider({name = "Left Zone X", flag = "esp_zone_left_x", min = -200, max = 200, default = -70, interval = 1, callback = function(val)
 					library:update_zone_positions()
 				end})
 				debug_section:slider({name = "Left Zone Y", flag = "esp_zone_left_y", min = -200, max = 200, default = 2, interval = 1, callback = function(val)
@@ -2028,7 +2028,7 @@
 			if zone_highlights and zone_highlights.created then
 				zone_highlights.top.Position = dim2(0.5, flags["esp_zone_top_x"] or 0, 0, flags["esp_zone_top_y"] or -5)
 				zone_highlights.bottom.Position = dim2(0.5, flags["esp_zone_bottom_x"] or 0, 1, flags["esp_zone_bottom_y"] or 5)
-				zone_highlights.left.Position = dim2(0, flags["esp_zone_left_x"] or -89, 0, flags["esp_zone_left_y"] or 2)
+				zone_highlights.left.Position = dim2(0, flags["esp_zone_left_x"] or -70, 0, flags["esp_zone_left_y"] or 2)
 				zone_highlights.right.Position = dim2(1, flags["esp_zone_right_x"] or 2, 0, flags["esp_zone_right_y"] or 2)
 			end
 		end
@@ -2179,7 +2179,7 @@
 				elseif zone == "bottom" then
 					highlight.Position = dim2(0.5, flags["esp_zone_bottom_x"] or 0, 1, flags["esp_zone_bottom_y"] or 5)
 				elseif zone == "left" then
-					highlight.Position = dim2(0, flags["esp_zone_left_x"] or -89, 0, flags["esp_zone_left_y"] or 2)
+					highlight.Position = dim2(0, flags["esp_zone_left_x"] or -70, 0, flags["esp_zone_left_y"] or 2)
 				elseif zone == "right" then
 					highlight.Position = dim2(1, flags["esp_zone_right_x"] or 2, 0, flags["esp_zone_right_y"] or 2)
 				end
@@ -2198,17 +2198,43 @@
 				local rel_x = mouse_pos.X - holder_pos.X
 				local rel_y = mouse_pos.Y - holder_pos.Y
 				
-				local dist_top = math.abs(rel_y)
-				local dist_bottom = math.abs(rel_y - holder_size.Y)
-				local dist_left = math.abs(rel_x)
-				local dist_right = math.abs(rel_x - holder_size.X)
+				local center_x = holder_size.X / 2
+				local center_y = holder_size.Y / 2
 				
-				local min_dist = math.min(dist_top, dist_bottom, dist_left, dist_right)
+				-- Determine zone based on which quadrant and which side is closer
+				local is_left_half = rel_x < center_x
+				local is_top_half = rel_y < center_y
 				
-				if min_dist == dist_top then return "top"
-				elseif min_dist == dist_bottom then return "bottom"
-				elseif min_dist == dist_left then return "left"
-				else return "right" end
+				-- Calculate distances to each edge
+				local dist_top = rel_y
+				local dist_bottom = holder_size.Y - rel_y
+				local dist_left = rel_x
+				local dist_right = holder_size.X - rel_x
+				
+				-- Prioritize vertical (top/bottom) if mouse is within horizontal bounds
+				-- Prioritize horizontal (left/right) if mouse is outside horizontal bounds
+				if rel_x >= 0 and rel_x <= holder_size.X then
+					-- Mouse is within horizontal bounds, choose top or bottom
+					if is_top_half then
+						return "top"
+					else
+						return "bottom"
+					end
+				elseif rel_y >= 0 and rel_y <= holder_size.Y then
+					-- Mouse is within vertical bounds, choose left or right
+					if is_left_half then
+						return "left"
+					else
+						return "right"
+					end
+				else
+					-- Mouse is in a corner, use closest edge
+					local min_dist = math.min(dist_top, dist_bottom, dist_left, dist_right)
+					if min_dist == dist_top then return "top"
+					elseif min_dist == dist_bottom then return "bottom"
+					elseif min_dist == dist_left then return "left"
+					else return "right" end
+				end
 			end
 			
 			local function show_zone_highlight(zone)
