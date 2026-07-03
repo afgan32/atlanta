@@ -2400,13 +2400,12 @@
 				ZIndex = 101
 			})
 			
-			local swap_stroke = library:create("UIStroke", {
+			library:create("UIStroke", {
 				Parent = swap_indicator,
 				Color = themes.preset.accent,
 				Thickness = 2,
 				Transparency = 0
 			})
-			library:apply_theme(swap_stroke, "accent", "Color")
 			
 			local function get_insert_position(zone, mouse_pos, holder_pos, holder_size)
 				local zone_elements = get_zone_elements(zone)
