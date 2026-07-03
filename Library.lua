@@ -2489,11 +2489,12 @@
 				local zone_data = zones[zone]
 				
 				if #text_elements == 0 or insert_pos > #text_elements then
-					-- Show at first position in empty zone OR after last element
-					swap_indicator.Size = dim2(0, 80, 0, 12)
+					-- For empty zone or adding after last element, just hide swap indicator
+					// Zone highlight already shows where element will go
+					swap_indicator.Visible = false
 					
-					if #text_elements > 0 then
-						-- After last element
+					if #text_elements > 0 and insert_pos > #text_elements then
+						// Show after last element only
 						local last_elem = text_elements[#text_elements]
 						for _, child in pairs(holder:GetChildren()) do
 							if (child:IsA("Frame") or child:IsA("TextLabel")) and child.Name:find(last_elem.id) then
@@ -2501,6 +2502,7 @@
 								local size = child.AbsoluteSize
 								local spacing = zone_data.spacing
 								
+								swap_indicator.Size = dim2(0, 80, 0, 12)
 								if zone == "top" or zone == "bottom" then
 									swap_indicator.Position = dim2(0.5, 0, pos.Y.Scale, pos.Y.Offset + (zone == "top" and -spacing or size.Y + spacing))
 									swap_indicator.AnchorPoint = vec2(0.5, zone == "top" and 1 or 0)
@@ -2513,28 +2515,8 @@
 								return
 							end
 						end
-					else
-						-- First position in empty zone - use zone default position
-						if zone == "top" then
-							swap_indicator.Position = dim2(0.5, 0, 0, zone_data.offset)
-							swap_indicator.AnchorPoint = vec2(0.5, 1)
-						elseif zone == "bottom" then
-							swap_indicator.Position = dim2(0.5, 0, 1, zone_data.offset)
-							swap_indicator.AnchorPoint = vec2(0.5, 0)
-						elseif zone == "left" then
-							local y_offset = zone_data.y_offset or 0
-							swap_indicator.Position = dim2(0, zone_data.offset, 0, y_offset)
-							swap_indicator.AnchorPoint = vec2(0, 0)
-						elseif zone == "right" then
-							local y_offset = zone_data.y_offset or 0
-							swap_indicator.Position = dim2(1, zone_data.offset, 0, y_offset)
-							swap_indicator.AnchorPoint = vec2(0, 0)
-						end
-						swap_indicator.Visible = true
-						return
 					end
 					
-					swap_indicator.Visible = false
 					return
 				end
 				
