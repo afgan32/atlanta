@@ -2486,11 +2486,11 @@
 				
 				if #text_elements == 0 or insert_pos > #text_elements then
 					-- For empty zone or adding after last element, just hide swap indicator
-					// Zone highlight already shows where element will go
+					-- Zone highlight already shows where element will go
 					swap_indicator.Visible = false
 					
 					if #text_elements > 0 and insert_pos > #text_elements then
-						// Show after last element only
+						-- Show after last element only
 						local last_elem = text_elements[#text_elements]
 						for _, child in pairs(holder:GetChildren()) do
 							if (child:IsA("Frame") or child:IsA("TextLabel")) and child.Name:find(last_elem.id) then
