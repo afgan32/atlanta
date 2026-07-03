@@ -1827,14 +1827,46 @@
 				debug_section:slider({name = "Character Y Offset", flag = "esp_character_y_offset", min = -5, max = 5, default = -0.3, interval = 0.1})
 				
 				-- Zone highlight position sliders
-				debug_section:slider({name = "Top Zone X", flag = "esp_zone_top_x", min = -200, max = 200, default = 0, interval = 1})
-				debug_section:slider({name = "Top Zone Y", flag = "esp_zone_top_y", min = -200, max = 200, default = 9, interval = 1})
-				debug_section:slider({name = "Bottom Zone X", flag = "esp_zone_bottom_x", min = -200, max = 200, default = 0, interval = 1})
-				debug_section:slider({name = "Bottom Zone Y", flag = "esp_zone_bottom_y", min = -200, max = 200, default = -20, interval = 1})
-				debug_section:slider({name = "Left Zone X", flag = "esp_zone_left_x", min = -200, max = 200, default = 32, interval = 1})
-				debug_section:slider({name = "Left Zone Y", flag = "esp_zone_left_y", min = -200, max = 200, default = 0, interval = 1})
-				debug_section:slider({name = "Right Zone X", flag = "esp_zone_right_x", min = -200, max = 200, default = 1, interval = 1})
-				debug_section:slider({name = "Right Zone Y", flag = "esp_zone_right_y", min = -200, max = 200, default = 1, interval = 1})
+				debug_section:slider({name = "Top Zone X", flag = "esp_zone_top_x", min = -200, max = 200, default = 0, interval = 1, callback = function(val)
+					if zone_highlights and zone_highlights.top then
+						zone_highlights.top.Position = dim2(0.5, val, 0, flags["esp_zone_top_y"] or 9)
+					end
+				end})
+				debug_section:slider({name = "Top Zone Y", flag = "esp_zone_top_y", min = -200, max = 200, default = 9, interval = 1, callback = function(val)
+					if zone_highlights and zone_highlights.top then
+						zone_highlights.top.Position = dim2(0.5, flags["esp_zone_top_x"] or 0, 0, val)
+					end
+				end})
+				debug_section:slider({name = "Bottom Zone X", flag = "esp_zone_bottom_x", min = -200, max = 200, default = 0, interval = 1, callback = function(val)
+					if zone_highlights and zone_highlights.bottom then
+						zone_highlights.bottom.Position = dim2(0.5, val, 1, flags["esp_zone_bottom_y"] or -20)
+					end
+				end})
+				debug_section:slider({name = "Bottom Zone Y", flag = "esp_zone_bottom_y", min = -200, max = 200, default = -20, interval = 1, callback = function(val)
+					if zone_highlights and zone_highlights.bottom then
+						zone_highlights.bottom.Position = dim2(0.5, flags["esp_zone_bottom_x"] or 0, 1, val)
+					end
+				end})
+				debug_section:slider({name = "Left Zone X", flag = "esp_zone_left_x", min = -200, max = 200, default = -60, interval = 1, callback = function(val)
+					if zone_highlights and zone_highlights.left then
+						zone_highlights.left.Position = dim2(0, val, 0, flags["esp_zone_left_y"] or 0)
+					end
+				end})
+				debug_section:slider({name = "Left Zone Y", flag = "esp_zone_left_y", min = -200, max = 200, default = 0, interval = 1, callback = function(val)
+					if zone_highlights and zone_highlights.left then
+						zone_highlights.left.Position = dim2(0, flags["esp_zone_left_x"] or -60, 0, val)
+					end
+				end})
+				debug_section:slider({name = "Right Zone X", flag = "esp_zone_right_x", min = -200, max = 200, default = 1, interval = 1, callback = function(val)
+					if zone_highlights and zone_highlights.right then
+						zone_highlights.right.Position = dim2(1, val, 0, flags["esp_zone_right_y"] or 1)
+					end
+				end})
+				debug_section:slider({name = "Right Zone Y", flag = "esp_zone_right_y", min = -200, max = 200, default = 1, interval = 1, callback = function(val)
+					if zone_highlights and zone_highlights.right then
+						zone_highlights.right.Position = dim2(1, flags["esp_zone_right_x"] or 1, 0, val)
+					end
+				end})
 				
 				-- Debug controls
 				debug_section:toggle({name = "Free Drag (No Snap)", flag = "esp_debug_free_drag", default = false})
@@ -2055,14 +2087,14 @@
 				})
 				library:apply_theme(bottom_stroke, "glow", "Color")
 				
-				-- Left zone (using current offset value 32, Y offset 0)
+				-- Left zone (using current offset value -60, Y offset 0) - left of box
 				zone_highlights.left = library:create("Frame", {
 					Parent = holder,
 					BackgroundColor3 = themes.preset.accent,
 					BackgroundTransparency = 0.5,
 					BorderSizePixel = 0,
 					Size = dim2(0, 60, 0, 12),
-					Position = dim2(0, 32, 0, 0),
+					Position = dim2(0, -60, 0, 0),
 					AnchorPoint = vec2(0, 0),
 					Visible = false,
 					ZIndex = 100
@@ -2111,7 +2143,7 @@
 			if zone_highlights.created then
 				zone_highlights.top.Position = dim2(0.5, flags["esp_zone_top_x"] or 0, 0, flags["esp_zone_top_y"] or 9)
 				zone_highlights.bottom.Position = dim2(0.5, flags["esp_zone_bottom_x"] or 0, 1, flags["esp_zone_bottom_y"] or -20)
-				zone_highlights.left.Position = dim2(0, flags["esp_zone_left_x"] or 32, 0, flags["esp_zone_left_y"] or 0)
+				zone_highlights.left.Position = dim2(0, flags["esp_zone_left_x"] or -60, 0, flags["esp_zone_left_y"] or 0)
 				zone_highlights.right.Position = dim2(1, flags["esp_zone_right_x"] or 1, 0, flags["esp_zone_right_y"] or 1)
 			end
 			
