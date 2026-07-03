@@ -1828,44 +1828,28 @@
 				
 				-- Zone highlight position sliders
 				debug_section:slider({name = "Top Zone X", flag = "esp_zone_top_x", min = -200, max = 200, default = 0, interval = 1, callback = function(val)
-					if zone_highlights and zone_highlights.top then
-						zone_highlights.top.Position = dim2(0.5, val, 0, flags["esp_zone_top_y"] or 9)
-					end
+					library:update_zone_positions()
 				end})
 				debug_section:slider({name = "Top Zone Y", flag = "esp_zone_top_y", min = -200, max = 200, default = 9, interval = 1, callback = function(val)
-					if zone_highlights and zone_highlights.top then
-						zone_highlights.top.Position = dim2(0.5, flags["esp_zone_top_x"] or 0, 0, val)
-					end
+					library:update_zone_positions()
 				end})
 				debug_section:slider({name = "Bottom Zone X", flag = "esp_zone_bottom_x", min = -200, max = 200, default = 0, interval = 1, callback = function(val)
-					if zone_highlights and zone_highlights.bottom then
-						zone_highlights.bottom.Position = dim2(0.5, val, 1, flags["esp_zone_bottom_y"] or -20)
-					end
+					library:update_zone_positions()
 				end})
 				debug_section:slider({name = "Bottom Zone Y", flag = "esp_zone_bottom_y", min = -200, max = 200, default = -20, interval = 1, callback = function(val)
-					if zone_highlights and zone_highlights.bottom then
-						zone_highlights.bottom.Position = dim2(0.5, flags["esp_zone_bottom_x"] or 0, 1, val)
-					end
+					library:update_zone_positions()
 				end})
 				debug_section:slider({name = "Left Zone X", flag = "esp_zone_left_x", min = -200, max = 200, default = -60, interval = 1, callback = function(val)
-					if zone_highlights and zone_highlights.left then
-						zone_highlights.left.Position = dim2(0, val, 0, flags["esp_zone_left_y"] or 0)
-					end
+					library:update_zone_positions()
 				end})
 				debug_section:slider({name = "Left Zone Y", flag = "esp_zone_left_y", min = -200, max = 200, default = 0, interval = 1, callback = function(val)
-					if zone_highlights and zone_highlights.left then
-						zone_highlights.left.Position = dim2(0, flags["esp_zone_left_x"] or -60, 0, val)
-					end
+					library:update_zone_positions()
 				end})
 				debug_section:slider({name = "Right Zone X", flag = "esp_zone_right_x", min = -200, max = 200, default = 1, interval = 1, callback = function(val)
-					if zone_highlights and zone_highlights.right then
-						zone_highlights.right.Position = dim2(1, val, 0, flags["esp_zone_right_y"] or 1)
-					end
+					library:update_zone_positions()
 				end})
 				debug_section:slider({name = "Right Zone Y", flag = "esp_zone_right_y", min = -200, max = 200, default = 1, interval = 1, callback = function(val)
-					if zone_highlights and zone_highlights.right then
-						zone_highlights.right.Position = dim2(1, flags["esp_zone_right_x"] or 1, 0, val)
-					end
+					library:update_zone_positions()
 				end})
 				
 				-- Debug controls
@@ -2038,6 +2022,16 @@
 		local esp_element_orientations = {}
 		local esp_element_orders = {}
 		local zone_highlights = {}
+		
+		-- Global function to update zone positions
+		function library:update_zone_positions()
+			if zone_highlights and zone_highlights.created then
+				zone_highlights.top.Position = dim2(0.5, flags["esp_zone_top_x"] or 0, 0, flags["esp_zone_top_y"] or 9)
+				zone_highlights.bottom.Position = dim2(0.5, flags["esp_zone_bottom_x"] or 0, 1, flags["esp_zone_bottom_y"] or -20)
+				zone_highlights.left.Position = dim2(0, flags["esp_zone_left_x"] or -60, 0, flags["esp_zone_left_y"] or 0)
+				zone_highlights.right.Position = dim2(1, flags["esp_zone_right_x"] or 1, 0, flags["esp_zone_right_y"] or 1)
+			end
+		end
 		
 		function library:make_esp_draggable(element, holder, element_type, element_id)
 			local dragging = false
